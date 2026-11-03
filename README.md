@@ -13,7 +13,9 @@ EqualTune is a free, system-wide audio equalizer for Windows. A WPF window hosts
 2. Download `EqualTune-Setup-x.y.z.exe` under **Assets** and run it.
 3. Follow the setup. It can install VB-CABLE for you if you don't have it yet.
 
-Requires Windows 10 or 11 (64-bit). Windows may show a "Windows protected your PC" warning because the installer is not code-signed yet: click **More info → Run anyway**.
+EqualTune is for Windows 10 and 11 (64-bit) for now. **A Linux version is planned.**
+
+Windows may show a "Windows protected your PC" warning because the installer is not code-signed yet: click **More info → Run anyway**.
 
 ## Screenshots
 
@@ -72,6 +74,10 @@ EqualTune is built to be customized, and everything you make can be saved and sh
 - Skin files do not include uploaded fonts, because font licenses often don't allow redistribution. If you share a skin that uses a custom font, send the font file separately when its license permits.
 
 All of this stays on your computer, in your own settings.
+
+## Roadmap
+
+- **Linux version:** planned for a future release. It isn't started yet, and there's no date.
 
 ## Where things are kept
 
