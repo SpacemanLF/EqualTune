@@ -15,6 +15,23 @@ EqualTune is a free, system-wide audio equalizer for Windows. A WPF window hosts
 
 Requires Windows 10 or 11 (64-bit). Windows may show a "Windows protected your PC" warning because the installer is not code-signed yet: click **More info → Run anyway**.
 
+## Screenshots
+
+**Basic mode:** four tone controls (Bass, Warmth, Presence, Treble) with sound controls on the side.
+
+![Basic mode with sound controls](screenshots/01-basic-eq.png)
+
+**Advanced mode:** up to 12 parametric bands, each with its own frequency, gain, width (Q) and filter shape.
+
+![Advanced mode](screenshots/02-advanced-eq.png)
+
+| | |
+| --- | --- |
+| ![Band controls](screenshots/03-band-controls.png)<br>Every band can be named, dragged, reordered and given its own filter shape. | ![Live spectrum](screenshots/04-live-spectrum.png)<br>A live spectrum shows your audio behind the EQ curve. |
+| ![Presets](screenshots/05-presets.png)<br>14 built-in presets, plus your own. | ![Skins](screenshots/06-skins.png)<br>16 visual styles to choose from. |
+
+![Appearance options](screenshots/07-appearance.png)
+
 ## What it does
 
 - **Equalizer:** up to 12 live bands (bell, shelves, high/low-pass, notch and more) with frequency, gain and Q, drawn on a live response graph. Basic mode uses four tone bands; Advanced adds and removes bands.
@@ -26,6 +43,35 @@ Requires Windows 10 or 11 (64-bit). Windows may show a "Windows protected your P
 - **Live spectrum**, a different visual style for each of 16 skins, custom skins, background images and fonts.
 - **Global hotkeys:** `Ctrl+Alt+E` EQ on/off · `Ctrl+Alt+B` A/B compare · `Ctrl+Alt+←/→` previous/next preset · `Ctrl+Alt+↑/↓` volume.
 - **Safe output restore:** if EqualTune stops or crashes, Windows sound is switched back to your real output.
+
+## Make it yours
+
+EqualTune is built to be customized, and everything you make can be saved and shared.
+
+**Presets**
+- Start from one of the 14 built-in presets, or build your own by dragging points on the graph or typing exact frequency, gain and Q values.
+- Click **Save** to keep your EQ as a named preset. **Save a copy** on any built-in preset lets you tweak it without losing the original.
+- **Export** writes an `.equaltune-eq.json` file you can send to a friend. **Import** loads one back in.
+- **Export .txt / Import** use the Equalizer APO / AutoEq text format, so you can bring in EQ profiles made for your headphones by the community, or take yours to other EQ apps.
+
+**Skins and layouts**
+- Pick one of 16 visual styles (studio, cinematic, vintage analog, oscilloscope, frosted glass, blueprint, paper, synthwave, game HUD, aurora, high contrast and more), then adjust it:
+  - accent color (presets or any custom color), text color, contrast and text sizes
+  - marker shape, curve style, corner roundness and spacing
+  - colorblind-safe band colors
+- Save your setup as a **custom skin**, then use **Export skin file** to share it as an `.equaltune-skin.json` file. Anyone can load it with **Import skin file**. Background images are included in the file.
+
+**Custom backgrounds**
+- Upload your own background image (PNG, JPEG or WebP) from your computer, and adjust its opacity until the interface stays easy to read.
+- Images are resized and compressed on your computer before they're saved, so large photos are fine.
+- Remove it at any time to go back to the skin's own look.
+- A background is saved as part of your custom skin, so when you export a skin file the image goes with it.
+
+**Fonts**
+- Choose a built-in interface font (Segoe UI, Arial, Verdana, Tahoma, Trebuchet MS, Georgia, Times New Roman or Consolas), or pick **Custom font** and upload your own `.woff2`, `.woff`, `.ttf` or `.otf` file.
+- Skin files do not include uploaded fonts, because font licenses often don't allow redistribution. If you share a skin that uses a custom font, send the font file separately when its license permits.
+
+All of this stays on your computer, in your own settings.
 
 ## Where things are kept
 
