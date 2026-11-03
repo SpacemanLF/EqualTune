@@ -1,0 +1,77 @@
+<Window x:Class="EqualTune.AudioLab.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="EqualTune · Equalizer" Icon="Assets/EqualTune.ico" Height="820" Width="1280"
+        MinHeight="680" MinWidth="920" Background="#101117" Foreground="#EEF2FF"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <SolidColorBrush x:Key="Panel" Color="#191C25"/><SolidColorBrush x:Key="Panel2" Color="#202430"/><SolidColorBrush x:Key="Line" Color="#2A3040"/><SolidColorBrush x:Key="Muted" Color="#92A0BB"/>
+        <Style TargetType="Button"><Setter Property="Foreground" Value="#EEF2FF"/><Setter Property="Background" Value="#252A37"/><Setter Property="BorderBrush" Value="#363E51"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="14,9"/><Setter Property="Cursor" Value="Hand"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Setter.Value></Setter></Style>
+        <Style TargetType="ComboBox"><Setter Property="Foreground" Value="#202430"/><Setter Property="Background" Value="#F4F5F7"/><Setter Property="BorderBrush" Value="#363E51"/><Setter Property="Padding" Value="8,6"/><Setter Property="ItemContainerStyle"><Setter.Value><Style TargetType="ComboBoxItem"><Setter Property="Foreground" Value="#EEF2FF"/><Setter Property="Background" Value="#202430"/><Setter Property="Padding" Value="8,6"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBoxItem"><Border x:Name="ItemBorder" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsHighlighted" Value="True"><Setter TargetName="ItemBorder" Property="Background" Value="#343B4D"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="ItemBorder" Property="Background" Value="#343B4D"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style></Setter.Value></Setter></Style>
+        <Style TargetType="Slider"><Setter Property="Foreground" Value="#A77AFF"/><Setter Property="Margin" Value="0,5,0,0"/></Style>
+        <Style TargetType="TextBlock" x:Key="Hint"><Setter Property="Foreground" Value="{StaticResource Muted}"/><Setter Property="FontSize" Value="12"/></Style>
+    </Window.Resources>
+    <Grid>
+        <wv2:WebView2 x:Name="PrototypeUi" />
+        <Grid x:Name="LegacyUi" Margin="28" Visibility="Collapsed">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <DockPanel Grid.Row="0" Margin="0,0,0,20">
+            <Border Width="44" Height="44" CornerRadius="14" Background="#7259DB" DockPanel.Dock="Left" Margin="0,0,12,0"><TextBlock Text="E" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+            <StackPanel VerticalAlignment="Center"><TextBlock Text="EqualTune" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Windows audio lab · native playback prototype" Style="{StaticResource Hint}"/></StackPanel>
+            <Border DockPanel.Dock="Right" CornerRadius="12" Background="#282318" BorderBrush="#554728" BorderThickness="1" Padding="11,7" VerticalAlignment="Center"><TextBlock Text="AUDIO LAB" Foreground="#F3CE79" FontSize="10" FontWeight="Bold"/></Border>
+        </DockPanel>
+        <Border Grid.Row="1" CornerRadius="10" Background="#292417" BorderBrush="#554728" BorderThickness="1" Padding="13,10" Margin="0,0,0,16"><TextBlock x:Name="RouteBannerText" Foreground="#EDCF8D" TextWrapping="Wrap" Text="Choose a playback source below. EqualTune applies EQ and forwards the audio to your selected headphones or speakers."/></Border>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="1.45*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="15" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Margin="0,0,0,18"><TextBlock Text="Test tone" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="Use a steady tone to hear how the EQ band changes its level." Style="{StaticResource Hint}" Margin="0,3,0,0"/></StackPanel>
+                    <Border Grid.Row="1" Background="{StaticResource Panel2}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="15" Margin="0,0,0,16">
+                        <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                            <DockPanel Grid.Row="0"><StackPanel><TextBlock Text="Tone frequency" Style="{StaticResource Hint}"/><TextBlock x:Name="ToneValue" Text="1,000 Hz" FontSize="20" FontWeight="SemiBold" Margin="0,3,0,0"/></StackPanel><Button x:Name="SweepButton" Content="↗  EQ sweep" Click="SweepButton_Click" Margin="0,0,8,0" Padding="12,9" DockPanel.Dock="Right" VerticalAlignment="Center"/><Button x:Name="ToneButton" Content="▶  Start tone" Click="ToneButton_Click" Background="#347FD8" BorderBrush="#347FD8" FontWeight="SemiBold" MinWidth="130" DockPanel.Dock="Right" VerticalAlignment="Center"/></DockPanel>
+                            <Slider x:Name="ToneSlider" Grid.Row="1" Minimum="40" Maximum="12000" Value="1000" ValueChanged="ToneSlider_ValueChanged" Margin="0,14,0,0"/>
+                            <TextBlock Grid.Row="2" Text="Tip: match the tone to the EQ frequency to hear gain changes. Use EQ sweep to hear bandwidth changes." Style="{StaticResource Hint}" Margin="0,4,0,0"/>
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="2" Background="{StaticResource Panel2}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="15">
+                        <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                            <DockPanel Grid.Row="0" Margin="0,0,0,12"><StackPanel><TextBlock Text="Parametric EQ · Band 1" FontWeight="SemiBold"/><TextBlock Text="Peaking filter · live adjustment" Style="{StaticResource Hint}" Margin="0,3,0,0"/></StackPanel><ToggleButton x:Name="EqToggle" Content="EQ On" IsChecked="True" Click="EqToggle_Click" DockPanel.Dock="Right" Padding="11,6" Background="#34264E" Foreground="#D9C4FF" BorderBrush="#674AA0"/></DockPanel>
+                            <Canvas x:Name="ResponseCanvas" Grid.Row="1" MinHeight="160" SizeChanged="ResponseCanvas_SizeChanged"/>
+                            <Grid Grid.Row="2" Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="14"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0"><DockPanel><TextBlock Text="Frequency" Style="{StaticResource Hint}"/><TextBlock x:Name="FrequencyValue" Text="1 kHz" Foreground="#EEF2FF" FontWeight="SemiBold" DockPanel.Dock="Right"/></DockPanel><Slider x:Name="FrequencySlider" Minimum="0" Maximum="1000" Value="567" ValueChanged="FrequencySlider_ValueChanged"/></StackPanel>
+                                <StackPanel Grid.Column="2"><DockPanel><TextBlock Text="Gain" Style="{StaticResource Hint}"/><TextBlock x:Name="GainValue" Text="0.0 dB" Foreground="#EEF2FF" FontWeight="SemiBold" DockPanel.Dock="Right"/></DockPanel><Slider x:Name="GainSlider" Minimum="-12" Maximum="12" Value="0" ValueChanged="GainSlider_ValueChanged"/></StackPanel>
+                                <StackPanel Grid.Column="0" Margin="0,46,0,0"><DockPanel><TextBlock Text="Q / bandwidth" Style="{StaticResource Hint}"/><TextBlock x:Name="QValue" Text="1.0" Foreground="#EEF2FF" FontWeight="SemiBold" DockPanel.Dock="Right"/></DockPanel><Slider x:Name="QSlider" Minimum="0.2" Maximum="10" Value="1" ValueChanged="QSlider_ValueChanged"/></StackPanel>
+                                <StackPanel Grid.Column="2" Margin="0,46,0,0"><DockPanel><TextBlock Text="Tone level" Style="{StaticResource Hint}"/><TextBlock x:Name="LevelValue" Text="40%" Foreground="#EEF2FF" FontWeight="SemiBold" DockPanel.Dock="Right"/></DockPanel><Slider x:Name="LevelSlider" Minimum="0" Maximum="100" Value="40" ValueChanged="LevelSlider_ValueChanged"/></StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+            <Border Grid.Column="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="15" Padding="20">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <TextBlock Text="Output device" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="Send the generated tone to a Windows audio endpoint." Style="{StaticResource Hint}" Margin="0,3,0,12"/>
+                    <Grid Margin="0,0,0,18"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><ComboBox x:Name="OutputDeviceCombo" Grid.Column="0" DisplayMemberPath="Name" SelectionChanged="OutputDeviceCombo_SelectionChanged" MinHeight="36"/><Button Grid.Column="1" Content="↻" ToolTip="Refresh output devices" Click="RefreshDevices_Click" Margin="8,0,0,0" Padding="12,6"/></Grid>
+                    <TextBlock Text="Virtual audio route" FontSize="14" FontWeight="SemiBold" Margin="0,4,0,3"/><TextBlock Text="Send app or Windows audio through EqualTune, then choose where you listen." Style="{StaticResource Hint}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                    <TextBlock Text="Route mode" Style="{StaticResource Hint}" Margin="0,0,0,4"/><ComboBox x:Name="CaptureModeCombo" SelectedIndex="0" SelectionChanged="CaptureModeCombo_SelectionChanged" MinHeight="36" Margin="0,0,0,8"><ComboBoxItem Content="VB-Cable recording endpoint"/><ComboBoxItem Content="Playback capture · EqualTune or Cable"/><ComboBoxItem Content="Microphone input"/></ComboBox>
+                    <TextBlock x:Name="CaptureSourceLabel" Text="Virtual cable recording endpoint" Style="{StaticResource Hint}" Margin="0,0,0,4"/><ComboBox x:Name="CaptureDeviceCombo" DisplayMemberPath="Name" SelectionChanged="CaptureDeviceCombo_SelectionChanged" MinHeight="36" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="VirtualCableStatusText" Text="Checking for a virtual cable…" Style="{StaticResource Hint}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                    <Button x:Name="RouteButton" Content="▶  Start system audio route" Click="RouteButton_Click" Background="#347FD8" BorderBrush="#347FD8" FontWeight="SemiBold" HorizontalAlignment="Stretch"/>
+                    <TextBlock x:Name="RouteHelpText" Text="Install a virtual cable once, set its playback endpoint as the Windows output, and choose your headphones or speakers above. EqualTune will capture the cable's recording endpoint." TextWrapping="Wrap" Style="{StaticResource Hint}" Margin="0,8,0,14"/>
+                    <Border Height="1" Background="{StaticResource Line}" Margin="0,0,0,18"/>
+                    <TextBlock Text="Playback status" FontSize="13" FontWeight="SemiBold"/><TextBlock x:Name="StatusText" Text="Audio engine ready" Style="{StaticResource Hint}" Margin="0,5,0,12"/>
+                    <TextBlock Text="Captured source level" Style="{StaticResource Hint}" Margin="0,0,0,4"/><ProgressBar x:Name="InputPeakMeter" Height="8" Minimum="0" Maximum="100" Value="0" Foreground="#55B8FF" Background="#10131B" BorderThickness="0"/>
+                    <TextBlock Text="EQ output level" Style="{StaticResource Hint}" Margin="0,10,0,4"/><ProgressBar x:Name="PeakMeter" Height="8" Minimum="0" Maximum="100" Value="0" Foreground="#55DDB3" Background="#10131B" BorderThickness="0"/><TextBlock Text="When routing, listen on the selected output device. Playback loopback only captures audio sent to the selected source." Style="{StaticResource Hint}" TextWrapping="Wrap" Margin="0,7,0,0"/>
+                    <Border Background="#171A22" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,24,0,0"><StackPanel><TextBlock Text="Simple setup" FontWeight="SemiBold"/><TextBlock Text="Choose EqualTune Virtual Speakers or VB-Cable Input as the playback source. Set it as the Windows default once to include all apps. Then choose your headphones or speakers here and start the route." TextWrapping="Wrap" Style="{StaticResource Hint}" Margin="0,5,0,0"/></StackPanel></Border>
+                    <TextBlock x:Name="ErrorText" Foreground="#FF9B9B" TextWrapping="Wrap" Margin="0,14,0,0" Visibility="Collapsed"/>
+                </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+        <TextBlock Grid.Row="3" Text="EqualTune · early native audio engineering prototype" Foreground="#6F7B91" FontSize="11" HorizontalAlignment="Center" Margin="0,14,0,0"/>
+        </Grid>
+    </Grid>
+</Window>

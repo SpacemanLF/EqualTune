@@ -1,0 +1,23 @@
+# Build output
+bin/
+obj/
+publish/
+installer/Output/
+
+# Local backups and logs
+backup-*/
+logs/
+*.bak
+
+# IDE
+.vs/
+*.user
+
+# Local tool caches
+/.appdata/
+/.dotnet-cli/
+/.dotnet-cli-home/
+/.packages/
+
+# Old UI backups
+Assets/*-backup.html
