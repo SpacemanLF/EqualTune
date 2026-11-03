@@ -1,6 +1,19 @@
-# EqualTune 1.0
+# EqualTune
 
-EqualTune is a system-wide audio equalizer for Windows. A WPF window hosts the HTML interface in WebView2, and a native WASAPI engine does the audio work.
+![EqualTune](branding/EqualTune-banner-1500x500.png)
+
+EqualTune is a free, system-wide audio equalizer for Windows. A WPF window hosts the HTML interface in WebView2, and a native WASAPI engine does the audio work.
+
+[![Download EqualTune](https://img.shields.io/github/v/release/SpacemanLF/EqualTune?label=Download%20EqualTune&style=for-the-badge&color=2f80ed)](https://github.com/SpacemanLF/EqualTune/releases/latest)
+[![Support EqualTune](https://img.shields.io/badge/Support-EqualTune-ffdd00?style=for-the-badge)](https://buymeacoffee.com/equaltune)
+
+## Download
+
+1. Go to the [**latest release**](https://github.com/SpacemanLF/EqualTune/releases/latest).
+2. Download `EqualTune-Setup-x.y.z.exe` under **Assets** and run it.
+3. Follow the setup. It can install VB-CABLE for you if you don't have it yet.
+
+Requires Windows 10 or 11 (64-bit). Windows may show a "Windows protected your PC" warning because the installer is not code-signed yet: click **More info → Run anyway**.
 
 ## What it does
 
