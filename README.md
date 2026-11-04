@@ -35,19 +35,6 @@ Windows may show a "Windows protected your PC" warning because the installer is 
 
 ![Appearance options](screenshots/07-appearance.png)
 
-<a href="https://peerpush.com/p/equaltune-lhfj"
-  target="_blank"
-  rel="noopener"
->
-  <img
-    src="https://peerpush.com/p/equaltune-lhfj/badge.png"
-    alt="EqualTune on PeerPush"
-    width="230"
-    height="65"
-    loading="lazy"
-    style="width: 230px; height: auto;"
-  />
-</a>
 
 ## What it does
 
@@ -140,3 +127,14 @@ The app icon is `Assets/EqualTune.ico` (source: `Assets/EqualTune-icon-1024.png`
 
 - The routed sound uses the shared-mode mix format; 32-bit float and 16-bit PCM are supported.
 - Playback loopback (capturing a normal output instead of the virtual cable) is a diagnostic preview: the original sound keeps playing alongside the processed copy.
+
+>
+  <img
+    src="https://peerpush.com/p/equaltune-lhfj/badge.png"
+    alt="EqualTune on PeerPush"
+    width="230"
+    height="65"
+    loading="lazy"
+    style="width: 230px; height: auto;"
+  />
+</a>
