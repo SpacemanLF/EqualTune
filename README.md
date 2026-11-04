@@ -6,6 +6,7 @@ EqualTune is a free, system-wide audio equalizer for Windows. A WPF window hosts
 
 [![Download EqualTune](https://img.shields.io/github/v/release/SpacemanLF/EqualTune?label=Download%20EqualTune&style=for-the-badge&color=2f80ed)](https://github.com/SpacemanLF/EqualTune/releases/latest)
 [![Support EqualTune](https://img.shields.io/badge/Support-EqualTune-ffdd00?style=for-the-badge)](https://buymeacoffee.com/equaltune)
+[![Join r/EqualTune](https://img.shields.io/badge/Reddit-r%2FEqualTune-ff4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/r/EqualTune/)
 
 ## Download
 
@@ -78,6 +79,10 @@ All of this stays on your computer, in your own settings.
 ## Roadmap
 
 - **Linux version:** planned for a future release. It isn't started yet, and there's no date.
+
+## Community
+
+Questions, bug reports, shared presets and skins: join **[r/EqualTune](https://www.reddit.com/r/EqualTune/)** on Reddit. You can also [open an issue](https://github.com/SpacemanLF/EqualTune/issues) here on GitHub.
 
 ## Where things are kept
 
