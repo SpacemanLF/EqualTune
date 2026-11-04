@@ -35,6 +35,20 @@ Windows may show a "Windows protected your PC" warning because the installer is 
 
 ![Appearance options](screenshots/07-appearance.png)
 
+<a href="https://peerpush.com/p/equaltune-lhfj"
+  target="_blank"
+  rel="noopener"
+>
+  <img
+    src="https://peerpush.com/p/equaltune-lhfj/badge.png"
+    alt="EqualTune on PeerPush"
+    width="230"
+    height="65"
+    loading="lazy"
+    style="width: 230px; height: auto;"
+  />
+</a>
+
 ## What it does
 
 - **Equalizer:** up to 12 live bands (bell, shelves, high/low-pass, notch and more) with frequency, gain and Q, drawn on a live response graph. Basic mode uses four tone bands; Advanced adds and removes bands.
