@@ -123,6 +123,19 @@ The audio engine uses Windows' built-in Core Audio COM and WASAPI APIs directly.
 
 The app icon is `Assets/EqualTune.ico` (source: `Assets/EqualTune-icon-1024.png`). The same icon is used for the window, the EXE and the installer.
 
+<a href="https://peerpush.com/p/equaltune-lhfj"
+  target="_blank"
+  rel="noopener"
+>
+  <img
+    src="https://peerpush.com/p/equaltune-lhfj/badge.png"
+    alt="EqualTune on PeerPush"
+    width="230"
+    height="65"
+    loading="lazy"
+    style="width: 230px; height: auto;"
+  />
+</a>
 ## Notes
 
 - The routed sound uses the shared-mode mix format; 32-bit float and 16-bit PCM are supported.
