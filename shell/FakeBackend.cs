@@ -57,6 +57,7 @@ internal static class FakeBackend
         var target = which switch
         {
             "donate" => "https://buymeacoffee.com/equaltune",
+            "community" => "https://www.reddit.com/r/EqualTune/",
             "logs" => Path.GetTempPath(),
             _ => null,
         };

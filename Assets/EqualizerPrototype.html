@@ -189,6 +189,9 @@
     .pill.route-error .dot { background:#ff748e; box-shadow:0 0 10px #ff748e88; }
     .route-card.route-error .dot { background:#ff748e; box-shadow:0 0 10px #ff748e88; }
     .banner[hidden] { display:none!important; }
+    .banner .banner-close { display:none; flex:none; margin-left:4px!important; padding:0 8px!important; border:0!important; background:none!important; box-shadow:none!important; color:inherit!important; opacity:.65; font-size:22px; line-height:1; cursor:pointer; border-radius:8px; }
+    .banner[data-state="routing"] .banner-close { display:block; }
+    .banner .banner-close:hover,.banner .banner-close:focus-visible { opacity:1; background:#ffffff1f!important; }
     .banner[data-state="error"] { border-color:#704052;background:#2a1d29;color:#ffc1cb; }
     .banner[data-state="error"] strong { color:#ffdce2; }
     .banner[data-state="routing"] { border-color:#285b4d;background:#172923;color:#b6f0d5; }
@@ -642,10 +645,11 @@
       body.theme-immersive .selected-band-title { grid-column:1/-1; }
     }
     /* Full preset compositions: navigation, toolbar placement, graph, and controls move together. */
-    body.theme-immersive .banner { position:relative; min-height:112px; overflow:hidden; align-items:flex-end; padding:18px 22px; border:1px solid #444279; border-radius:18px; background:radial-gradient(ellipse at 78% 15%,#767cff55,transparent 30%),radial-gradient(ellipse at 90% 5%,#7cd8ff33,transparent 28%),linear-gradient(105deg,#111326 4%,#1a2142 53%,#101527); box-shadow:0 14px 40px #090b1f88,inset 0 1px #ffffff22; }
+    body.theme-immersive .banner { position:relative; min-height:112px; overflow:hidden; align-items:center; padding:18px 22px; border:1px solid #444279; border-radius:18px; background:radial-gradient(ellipse at 78% 15%,#767cff55,transparent 30%),radial-gradient(ellipse at 90% 5%,#7cd8ff33,transparent 28%),linear-gradient(105deg,#111326 4%,#1a2142 53%,#101527); box-shadow:0 14px 40px #090b1f88,inset 0 1px #ffffff22; }
     body.theme-immersive .banner:after { content:""; position:absolute; right:7%; top:-47px; width:210px; height:130px; border-radius:50% 50% 35% 35%; background:radial-gradient(ellipse at 50% 100%,#d3e8ff55 0 2%,transparent 3%),linear-gradient(180deg,#95bbff44,#30386744 65%,#11172a); filter:blur(1px); opacity:.7; pointer-events:none; }
     body.theme-immersive .banner>span,body.theme-immersive .banner button { position:relative; z-index:1; }
-    body.theme-immersive .banner>span:first-child { align-self:flex-start; color:#aeb0ff; }
+    body.theme-immersive .banner>span:first-child { display:none; }
+    body.theme-immersive .banner strong::before { content:"●"; color:#aeb0ff; font-size:.6em; margin-right:.6em; vertical-align:.18em; }
     body.theme-immersive .banner>span:nth-child(2) { max-width:70%; font-size:13px; color:#d5d8ff; }
     body.theme-immersive .banner strong { color:#fff; font-size:17px; letter-spacing:.02em; }
     body.theme-immersive .banner button { margin-left:auto; border-color:#7778ba; background:#202647cc; color:#eef0ff; }
@@ -664,7 +668,6 @@
     body.theme-immersive .basic-control small { font-size:10px; }
     body.theme-immersive .basic-control input { margin-top:11px; }
     body.theme-immersive .eq-panel { background:linear-gradient(150deg,#14192a,#10121d); }
-    body.theme-variance .banner { background:radial-gradient(ellipse at 78% 25%,#b586ff5c,transparent 24%),radial-gradient(ellipse at 91% 15%,#62dcff4a,transparent 30%),linear-gradient(110deg,#101327,#1e2045 54%,#0e1828); }
     body.theme-variance .graph-wrap { position:relative; }
     body.theme-variance .graph-wrap:after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(105deg,transparent 0%,rgba(159,140,255,0) 36.0%,rgba(156,144,255,0.0030) 37.8%,rgba(154,149,255,0.0117) 39.5%,rgba(151,153,255,0.0249) 41.3%,rgba(148,158,255,0.0408) 43.1%,rgba(145,162,255,0.0573) 44.8%,rgba(143,167,255,0.0721) 46.6%,rgba(140,171,255,0.0833) 48.4%,rgba(137,176,255,0.0892) 50.1%,rgba(135,180,255,0.0892) 51.9%,rgba(132,185,255,0.0833) 53.6%,rgba(129,189,255,0.0721) 55.4%,rgba(127,194,255,0.0573) 57.2%,rgba(124,198,255,0.0408) 58.9%,rgba(121,203,255,0.0249) 60.7%,rgba(118,207,255,0.0117) 62.5%,rgba(116,212,255,0.0030) 64.2%,rgba(113,216,255,0) 66.0%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 9%,#000 91%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 9%,#000 91%,transparent 100%); background-size:220% 100%; animation:varianceSweep 9s ease-in-out infinite; }
     @keyframes varianceSweep { 0%,100% { background-position:100% 0; } 50% { background-position:0 0; } }
@@ -855,7 +858,7 @@
     body.theme-variance .side-bottom { margin:0 0 0 auto; }
     body.theme-variance main { width:min(1700px,100%);margin:0 auto;padding:18px clamp(20px,3vw,48px) 35px; }
     body.theme-variance .topbar { padding:9px 15px 16px;border-bottom:1px solid #292e4b; }
-    body.theme-variance .banner { min-height:92px;border:1px solid #454274;border-radius:20px;background:radial-gradient(ellipse at 80% 25%,#b586ff5c,transparent 24%),radial-gradient(ellipse at 91% 15%,#62dcff4a,transparent 30%),linear-gradient(110deg,#101327,#1e2045 54%,#0e1828); }
+    body.theme-variance .banner { min-height:92px;border-radius:20px; }
     body.theme-variance .eq-panel { display:grid;grid-template-columns:minmax(0,1fr);gap:0;padding:18px 20px 20px;border:1px solid #313959;border-radius:24px;background:linear-gradient(160deg,#13182a,#0d111d);box-shadow:0 18px 55px #05071299; }
     body.theme-variance .eq-panel>.panel-head,body.theme-variance .eq-panel>.advanced-note,body.theme-variance .eq-panel>.band-list,body.theme-variance .eq-panel>.band-actions { grid-column:1; }
     body.theme-variance .eq-panel>.graph-wrap { height:390px;border:1px solid #3d426e;border-radius:20px;background:radial-gradient(ellipse at 50% 60%,#6449a12b,transparent 62%),#090c17;box-shadow:inset 0 0 45px #101734; }
@@ -1644,6 +1647,47 @@ html.lite-fx .graph-wrap::after{mix-blend-mode:normal!important;-webkit-mask-ima
 html.lite-fx canvas{filter:none!important;animation:none!important}
 /* Pause skin animations while the window is being resized or a point is being dragged, so slow drawing can keep up. */
 html.busy-fx *,html.busy-fx *::before,html.busy-fx *::after{animation-play-state:paused!important}
+    /* Banner: shrink to its content, sit centered, and keep the same gap before the button in every skin. */
+    body .banner { width:fit-content!important; max-width:100%!important; margin-left:auto!important; margin-right:auto!important; align-self:center!important; justify-self:center!important; justify-content:center!important; gap:18px!important; text-align:left; box-sizing:border-box; }
+    body .banner>span:nth-child(2) { max-width:none!important; }
+    body .banner button:not(.banner-close) { margin:0!important; flex:none; }
+    body .banner .banner-close { margin-left:-8px!important; }
+/* Banner: same size in every skin, tinted with the skin's own accent color (errors stay red). */
+body .banner { min-height:0!important; padding:14px 18px!important; }
+body.theme-immersive .banner strong { font-size:13px!important; letter-spacing:0!important; }
+body.theme-scope .banner { font-size:12px; }
+body:not(.theme-immersive) .banner[data-state="routing"] { border-color:color-mix(in srgb,var(--blue) 50%,transparent)!important; background:color-mix(in srgb,var(--blue) 13%,var(--surface))!important; color:var(--text)!important; }
+body .banner[data-state="routing"] strong { color:var(--text)!important; }
+body .banner[data-state="routing"]>span:first-child { color:var(--blue); }
+body.theme-immersive .banner[data-state="routing"] { border-color:color-mix(in srgb,var(--blue) 45%,transparent)!important; }
+/* Top-bar skins: the System audio card is one flat row (like Vintage) instead of a tall rounded box. */
+body:not(.hide-route-card):is(.theme-everyday,.theme-rack,.theme-blueprint,.theme-paper,.theme-synthwave,.theme-glass,.theme-aurora) .route-card { display:flex!important; flex-direction:row; align-items:center; gap:11px; padding:8px 12px!important; border-radius:5px!important; white-space:nowrap; min-height:0; }
+body:is(.theme-everyday,.theme-rack,.theme-blueprint,.theme-paper,.theme-synthwave,.theme-glass,.theme-aurora) .route-card .route-top { display:flex; align-items:center; justify-content:flex-start; gap:6px; }
+body:is(.theme-everyday,.theme-rack,.theme-blueprint,.theme-paper,.theme-synthwave,.theme-glass,.theme-aurora) .route-card strong { margin:0!important; }
+body:is(.theme-everyday,.theme-rack,.theme-blueprint,.theme-paper,.theme-synthwave,.theme-glass,.theme-aurora) .route-card small { display:none!important; }
+body:is(.theme-everyday,.theme-rack,.theme-blueprint,.theme-paper,.theme-synthwave,.theme-glass,.theme-aurora) .route-card .mini-link { margin:0!important; padding:0 0 0 6px!important; }
+/* Left-sidebar skins (Immersive, Variance, Game HUD): same sidebar as the other vertical presets, card and support link at the bottom. */
+body.theme-variance .shell { grid-template-columns:190px minmax(0,1fr)!important; grid-template-rows:none!important; }
+body.theme-hud .shell { grid-template-columns:190px minmax(0,1fr)!important; }
+body.theme-variance aside,body.theme-hud aside,body.theme-immersive aside { grid-row:auto!important; position:static!important; display:flex!important; flex-direction:column!important; align-items:stretch!important; justify-content:flex-start!important; gap:20px!important; padding:20px 12px!important; }
+body.theme-variance aside { border-bottom:0!important; border-right:1px solid #3d3a68!important; backdrop-filter:none; }
+body.theme-variance aside>div:nth-child(2),body.theme-variance aside>div:nth-child(3) { display:block!important; }
+body.theme-variance .nav,body.theme-hud .nav,body.theme-immersive .nav { display:grid!important; gap:8px!important; }
+body.theme-variance .brand,body.theme-hud .brand,body.theme-immersive .brand { justify-content:flex-start!important; padding:0 4px 15px!important; border-right:0!important; border-bottom:1px solid var(--line); }
+body.theme-variance .brand>div:nth-child(2),body.theme-hud .brand>div:nth-child(2),body.theme-hud .brand-name,body.theme-hud .brand-tag,body.theme-variance .nav-label,body.theme-hud .nav-label,body.theme-immersive .nav-label { display:block!important; }
+body.theme-variance .nav-label,body.theme-hud .nav-label,body.theme-immersive .nav-label { margin:12px 8px 6px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; }
+body.theme-variance .nav button,body.theme-hud .nav button,body.theme-immersive .nav button { width:100%; flex:none!important; min-width:0!important; min-height:44px; justify-content:flex-start!important; gap:10px!important; padding:8px 10px!important; font-size:13px!important; white-space:nowrap; }
+body.theme-variance .nav-icon,body.theme-hud .nav-icon,body.theme-immersive .nav-icon { width:32px!important; height:32px!important; flex:0 0 32px!important; font-size:17px!important; }
+body.theme-variance .side-bottom,body.theme-hud .side-bottom,body.theme-immersive .side-bottom { display:grid!important; flex-direction:column; gap:12px; margin:auto 0 0!important; align-self:stretch; }
+body.theme-variance .side-bottom .support-link,body.theme-hud .side-bottom .support-link,body.theme-immersive .side-bottom .support-link { white-space:normal; text-align:center; }
+body.theme-immersive:not(.hide-route-card):not(.zz1):not(.zz2) .route-card,body.theme-variance:not(.hide-route-card):not(.zz1):not(.zz2) .route-card,body.theme-hud:not(.hide-route-card):not(.zz1):not(.zz2) .route-card { display:block!important; padding:14px!important; border-radius:12px!important; white-space:normal; min-width:0; overflow:visible; }
+body.theme-hud:not(.hide-route-card):not(.zz1):not(.zz2) .route-card { border-radius:0!important; }
+body.theme-immersive:not(.hide-route-card):not(.zz1):not(.zz2) .route-card .route-top,body.theme-variance:not(.hide-route-card):not(.zz1):not(.zz2) .route-card .route-top,body.theme-hud:not(.hide-route-card):not(.zz1):not(.zz2) .route-card .route-top { display:flex; justify-content:space-between; }
+body.theme-immersive:not(.hide-route-card):not(.zz1):not(.zz2) .route-card .route-top>span:first-child,body.theme-variance:not(.hide-route-card):not(.zz1):not(.zz2) .route-card .route-top>span:first-child,body.theme-hud:not(.hide-route-card):not(.zz1):not(.zz2) .route-card .route-top>span:first-child { display:inline!important; }
+body.theme-immersive:not(.hide-route-card):not(.zz1):not(.zz2) .route-card strong,body.theme-variance:not(.hide-route-card):not(.zz1):not(.zz2) .route-card strong,body.theme-hud:not(.hide-route-card):not(.zz1):not(.zz2) .route-card strong { display:block!important; margin-top:8px!important; text-align:left; font-size:13px!important; }
+body.theme-immersive:not(.hide-route-card):not(.zz1):not(.zz2) .route-card small,body.theme-variance:not(.hide-route-card):not(.zz1):not(.zz2) .route-card small,body.theme-hud:not(.hide-route-card):not(.zz1):not(.zz2) .route-card small { display:block!important; }
+body.theme-immersive:not(.hide-route-card):not(.zz1):not(.zz2) .route-card .mini-link,body.theme-variance:not(.hide-route-card):not(.zz1):not(.zz2) .route-card .mini-link,body.theme-hud:not(.hide-route-card):not(.zz1):not(.zz2) .route-card .mini-link { display:inline-block!important; margin:8px 0 0!important; padding:0!important; }
+body.theme-hud .side-bottom .support-link:not([hidden]) { display:block!important; color:#f5e500; font-size:12px!important; }
 </style>
 <script id="equaltune-lite-fx-js">
 (function(){
@@ -1715,7 +1759,7 @@ html.busy-fx *,html.busy-fx *::before,html.busy-fx *::after{animation-play-state
         <button class="power on" id="power" title="Toggle EQ processing" aria-label="Disable EQ"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.4 6.8a8 8 0 1 0 11.2 0"/></svg></button>
       </div>
     </header>
-    <div class="banner" id="audioBanner"><span aria-hidden="true">●</span><span><strong id="audioBannerTitle">Audio setup needed</strong><span id="audioBannerText"> Choose your listening device, then open Devices to test audio or route system sound.</span></span><button class="small-btn" id="bannerDevices">Set up audio</button></div>
+    <div class="banner" id="audioBanner"><span aria-hidden="true">●</span><span><strong id="audioBannerTitle">Audio setup needed</strong><span id="audioBannerText"> Choose your listening device, then open Devices to test audio or route system sound.</span></span><button class="small-btn" id="bannerDevices">Set up audio</button><button class="banner-close" id="bannerClose" type="button" aria-label="Dismiss this message" title="Dismiss">×</button></div>
     <section id="equalizerPage">
     <div class="tabs-row">
       <div class="tabs" role="tablist"><button class="active" id="basic">Basic</button><button id="advanced">Advanced</button></div>
@@ -1824,7 +1868,7 @@ html.busy-fx *,html.busy-fx *::before,html.busy-fx *::after{animation-play-state
         <p class="skin-help" id="updateStatus">EqualTune checks GitHub for new versions in the background.</p>
         <div class="skin-actions"><button class="small-btn" id="checkUpdates" type="button">Check for updates</button><button class="small-btn primary" id="installUpdate" type="button" hidden>Download &amp; install update</button><button class="small-btn" id="updateNotes" type="button" hidden>What's new</button></div>
         <div class="preference-grid"><label class="preference-row" for="setCheckUpdates"><span><strong>Check for updates automatically</strong><small>Looks for a newer version about once a day. Nothing installs without your OK.</small></span><input id="setCheckUpdates" type="checkbox" checked></label></div>
-        <div class="skin-actions"><button class="small-btn primary" id="donateApp" type="button">♥ Support EqualTune</button><button class="small-btn" id="openLogs" type="button">Open log folder</button></div>
+        <div class="skin-actions"><button class="small-btn primary" id="donateApp" type="button">♥ Support EqualTune</button><button class="small-btn" id="openCommunity" type="button"><img src="data:image/png;base64,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" width="18" height="18" alt="" style="vertical-align:-4px;margin-right:7px">Join r/EqualTune</button><button class="small-btn" id="openLogs" type="button">Open log folder</button></div>
         <p class="skin-help">System-wide routing uses a virtual output that EqualTune creates through PipeWire or PulseAudio, so no extra drivers or downloads are needed.</p>
       </section>
       <div class="settings-group-heading"><h3>Appearance</h3></div>
@@ -2542,6 +2586,9 @@ html.busy-fx *,html.busy-fx *::before,html.busy-fx *::after{animation-play-state
   function openDevices(){showPage('Devices');postNative({type:'refresh'});}
   document.getElementById('routeInfo').onclick=openDevices;
   document.getElementById('bannerDevices').onclick=openDevices;
+  // The green "audio is flowing" message can be dismissed; it comes back the next time routing starts.
+  let routingBannerDismissed=false;
+  document.getElementById('bannerClose').onclick=()=>{routingBannerDismissed=true;document.getElementById('audioBanner').hidden=true;};
   document.getElementById('backToEqualizer').onclick=()=>showPage('Equalizer');
   document.getElementById('refreshDevicesTop').onclick=()=>postNative({type:'refresh'});
   document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{if(b.dataset.page==='Devices'){openDevices();return;}showPage(b.dataset.page);});
@@ -2658,7 +2705,7 @@ html.busy-fx *,html.busy-fx *::before,html.busy-fx *::after{animation-play-state
   document.getElementById('refreshDevices').onclick=()=>postNative({type:'refresh'});
   document.getElementById('startRoute').onclick=()=>{
     const button=document.getElementById('startRoute');
-    if(button.dataset.running==='true'){postNative({type:'stop'});return;}
+    routingBannerDismissed=false;if(button.dataset.running==='true'){postNative({type:'stop'});return;}
     postNative({type:'route',mode:document.getElementById('routeMode').value,sourceId:document.getElementById('sourceDevice').value,outputId:document.getElementById('routeOutput').value});
   };
   let prototypeSinkAvailable=null;
@@ -2716,7 +2763,7 @@ html.busy-fx *,html.busy-fx *::before,html.busy-fx *::after{animation-play-state
     document.getElementById('routeModalStatus').textContent=error?'Needs attention · check the audio message below':setup?'No active output devices found':preview?'Preview mode · audio requires the desktop app':routed?'System audio is passing through EqualTune':activeTest?`${raw} is active`:'Ready · no route active';
     document.getElementById('settingsAudioStatus').textContent=error?'Audio needs attention · open Devices to review':setup?'No active audio outputs found · connect an output device':preview?'Preview only · audio requires the desktop app':routed?'System audio is passing through EqualTune.':activeTest?`${raw} is active · no system route`:'Audio engine ready · no route active.';
     banner.dataset.state=error?'error':setup?'setup':preview?'preview':routed?'routing':'ready';
-    banner.hidden=!(error||setup||preview||routed);
+    banner.hidden=!(error||setup||preview||routed)||(routed&&routingBannerDismissed);
     document.getElementById('audioBannerTitle').textContent=error?'Audio needs attention':setup?'Audio setup needed':preview?'Preview only · audio setup required':routed?'Audio is flowing through EqualTune':'Audio ready';
     document.getElementById('audioBannerText').textContent=error?' Review the audio status in Devices.':setup?' Connect an active output device, then open Devices to configure audio.':preview?' Audio playback and routing are available in the desktop app.':routed?' Your system audio is being processed and sent to the selected listening device.':'';
     document.getElementById('bannerDevices').textContent=error||setup||preview?'Open Devices':'View devices';
@@ -3266,7 +3313,7 @@ html.busy-fx *,html.busy-fx *::before,html.busy-fx *::after{animation-play-state
     const note=document.getElementById('soundEngineNote');if(note)note.textContent=info.sound?`Audio engine is using: ${info.sound}`:'';
   };
   window.equalTuneSetAbout=info=>{const v=document.getElementById('aboutVersion');if(v&&info&&info.version)v.textContent=info.version;};
-  [['donateApp','donate'],['donateSide','donate'],['openLogs','logs']].forEach(([id,which])=>{const el=document.getElementById(id);if(el)el.addEventListener('click',()=>{if(window.chrome?.webview)postNative({type:'openurl',which});else notify('Opens in the desktop app.');});});
+  [['donateApp','donate'],['donateSide','donate'],['openCommunity','community'],['openLogs','logs']].forEach(([id,which])=>{const el=document.getElementById(id);if(el)el.addEventListener('click',()=>{if(window.chrome?.webview)postNative({type:'openurl',which});else notify('Opens in the desktop app.');});});
   // ---- App settings (tray, startup) and the first-run wizard ----
   const appSettings={closeToTray:true,startAtLogin:false,startMinimized:false,autoRoute:false,checkUpdates:true,firstRunDone:true};
   let lastDevices=null,autoRouteDone=false,appSettingsReady=false,wizardStep=0;
