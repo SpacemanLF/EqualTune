@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Platform-independent EqualTune code (EQ math, band model). Builds on Windows, Linux and macOS. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>EqualTune.Core</AssemblyName>
+    <RootNamespace>EqualTune.AudioLab</RootNamespace>
+  </PropertyGroup>
+
+  <!-- The types in here are "internal"; let the apps that use them see them. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="EqualTune.AudioLab" />
+    <InternalsVisibleTo Include="EqualTune.Shell" />
+  </ItemGroup>
+
+</Project>

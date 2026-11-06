@@ -1502,6 +1502,180 @@
 .support-link{margin-top:8px;opacity:.85}
 .support-link:hover{opacity:1}
 </style>
+<script id="equaltune-shell-bridge">
+/* Bridge for the cross-platform shell (Photino). Does nothing outside the shell. */
+(function () {
+  var ext = window.external;
+  if (!ext || typeof ext.sendMessage !== 'function') return;
+  window.chrome = window.chrome || {};
+  if (!window.chrome.webview) {
+    window.chrome.webview = { postMessage: function (m) { ext.sendMessage(typeof m === 'string' ? m : JSON.stringify(m)); } };
+  }
+  if (typeof ext.receiveMessage === 'function') {
+    ext.receiveMessage(function (raw) {
+      try {
+        var call = JSON.parse(raw);
+        var fn = window[call.fn];
+        if (typeof fn === 'function') fn.apply(window, call.args || []);
+      } catch (e) { console.error('Shell message failed', e); }
+    });
+  }
+  window.addEventListener('load', function () { ext.sendMessage(JSON.stringify({ type: 'shellReady' })); });
+})();
+</script>
+<style id="equaltune-select-css">
+.et-select-pop{overscroll-behavior:contain;position:fixed;z-index:2147483000;box-sizing:border-box;overflow-y:auto;padding:4px;border:1px solid;border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.45);line-height:1.25;user-select:none;-webkit-user-select:none;max-width:calc(100vw - 16px)}
+.et-opt{padding:7px 10px;border-radius:7px;cursor:default;white-space:nowrap}
+.et-opt.hi{background:var(--et-hi)}
+.et-opt.sel{font-weight:700}
+.et-opt.sel::after{content:"\2713";float:right;margin-left:14px;opacity:.8}
+.et-opt.dis{opacity:.45}
+.et-grp{padding:6px 10px 2px;font-size:.85em;opacity:.65;font-weight:700}
+.et-select-pop::-webkit-scrollbar{width:8px}
+.et-select-pop::-webkit-scrollbar-thumb{background:rgba(128,128,128,.45);border-radius:6px}
+</style>
+<script id="equaltune-select-popup">
+/* Themed replacement for the system dropdown list, so menus follow the skin colors. */
+(function(){
+  var pop=null,sel=null,items=[],hi=-1;
+  function rgb(c){var m=/rgba?\(([^)]+)\)/.exec(c||'');if(!m)return null;var p=m[1].split(',').map(function(x){return parseFloat(x);});return {r:p[0],g:p[1],b:p[2],a:p.length>3?p[3]:1};}
+  function tint(c,a){var m=/^#([0-9a-f]{6})$/i.exec(c);if(m){var n=parseInt(m[1],16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}var r=rgb(c);if(r)return 'rgba('+r.r+','+r.g+','+r.b+','+a+')';return 'rgba(120,160,255,'+a+')';}
+  function close(){
+    if(pop&&pop.parentNode)pop.parentNode.removeChild(pop);
+    pop=null;sel=null;items=[];hi=-1;
+    document.removeEventListener('keydown',onKey,true);document.removeEventListener('mousedown',onOut,true);
+    document.removeEventListener('wheel',onOut,true);window.removeEventListener('blur',close);window.removeEventListener('resize',close);
+  }
+  function onOut(e){if(!pop||pop.contains(e.target))return;if(e.type==='mousedown'&&e.target.closest&&e.target.closest('select'))return;close();}
+  function setHi(i,scroll){if(!items.length)return;hi=i;items.forEach(function(it,k){it.el.classList.toggle('hi',k===i);});if(scroll&&items[i])items[i].el.scrollIntoView({block:'nearest'});}
+  function pick(i){
+    var it=items[i];if(!it||it.opt.disabled)return;
+    var s=sel;close();
+    if(s.value!==it.opt.value){s.value=it.opt.value;s.dispatchEvent(new Event('input',{bubbles:true}));s.dispatchEvent(new Event('change',{bubbles:true}));}
+    s.focus();
+  }
+  function step(d){var n=items.length,i=hi;for(var k=0;k<n;k++){i=(i+d+n)%n;if(!items[i].opt.disabled){setHi(i,true);return;}}}
+  function onKey(e){
+    if(!pop)return;var k=e.key;
+    if(k==='Escape'){e.preventDefault();e.stopPropagation();var s=sel;close();if(s)s.focus();}
+    else if(k==='ArrowDown'){e.preventDefault();step(1);}
+    else if(k==='ArrowUp'){e.preventDefault();step(-1);}
+    else if(k==='Enter'||k===' '){e.preventDefault();e.stopPropagation();pick(hi);}
+    else if(k==='Tab'){close();}
+  }
+  function open(s){
+    close();sel=s;
+    var cs=getComputedStyle(s),root=getComputedStyle(document.documentElement);
+    var bg=rgb(cs.backgroundColor);
+    var bgc=(bg&&bg.a>0.05)?'rgb('+bg.r+','+bg.g+','+bg.b+')':(root.getPropertyValue('--surface-2').trim()||'#20242e');
+    var bd=parseFloat(cs.borderTopWidth)>0?cs.borderTopColor:(root.getPropertyValue('--line').trim()||'#303542');
+    var ac=root.getPropertyValue('--blue').trim()||'#4aa6ff';
+    pop=document.createElement('div');pop.className='et-select-pop';pop.setAttribute('role','listbox');
+    pop.addEventListener('wheel',function(e){var p=pop,top=p.scrollTop<=0,bot=p.scrollTop+p.clientHeight>=p.scrollHeight-1;if(p.scrollHeight<=p.clientHeight||(e.deltaY<0&&top)||(e.deltaY>0&&bot))e.preventDefault();e.stopPropagation();},{passive:false});
+    pop.style.background=bgc;pop.style.color=cs.color;pop.style.borderColor=bd;
+    pop.style.fontFamily=cs.fontFamily;pop.style.fontSize=cs.fontSize;
+    pop.style.setProperty('--et-hi',tint(ac,0.32));
+    Array.prototype.forEach.call(s.querySelectorAll('option,optgroup'),function(n){
+      if(n.hidden)return;
+      if(n.tagName==='OPTGROUP'){var g=document.createElement('div');g.className='et-grp';g.textContent=n.label;pop.appendChild(g);return;}
+      var el=document.createElement('div'),idx=items.length;
+      el.className='et-opt'+(n.selected?' sel':'')+(n.disabled?' dis':'');
+      el.setAttribute('role','option');el.textContent=n.textContent;
+      el.addEventListener('mousemove',function(){if(!n.disabled&&hi!==idx)setHi(idx,false);});
+      el.addEventListener('mousedown',function(e){e.preventDefault();});
+      el.addEventListener('click',function(e){e.stopPropagation();pick(idx);});
+      pop.appendChild(el);items.push({opt:n,el:el});
+    });
+    document.body.appendChild(pop);
+    var r=s.getBoundingClientRect();
+    pop.style.minWidth=r.width+'px';
+    var full=pop.offsetHeight,below=window.innerHeight-r.bottom-8,above=r.top-8;
+    var up=below<Math.min(full,320)&&above>below;
+    pop.style.maxHeight=Math.min(320,up?above:below)+'px';
+    var hh=pop.offsetHeight;
+    pop.style.top=(up?Math.max(8,r.top-4-hh):r.bottom+4)+'px';
+    var left=r.left,pw=pop.offsetWidth;if(left+pw>window.innerWidth-8)left=Math.max(8,window.innerWidth-8-pw);
+    pop.style.left=left+'px';
+    var si=-1;items.forEach(function(it,k){if(it.opt.selected)si=k;});
+    setHi(si<0?0:si,true);
+    document.addEventListener('keydown',onKey,true);document.addEventListener('mousedown',onOut,true);
+    document.addEventListener('wheel',onOut,true);window.addEventListener('blur',close);window.addEventListener('resize',close);
+  }
+  document.addEventListener('mousedown',function(e){
+    var s=e.target&&e.target.closest?e.target.closest('select'):null;
+    if(!s||s.disabled||s.multiple||s.size>1||e.button!==0)return;
+    e.preventDefault();s.focus();
+    if(sel===s)close();else open(s);
+  },true);
+  document.addEventListener('keydown',function(e){
+    if(pop)return;var s=e.target;
+    if(!s||s.tagName!=='SELECT'||s.disabled)return;
+    if(e.key==='Enter'||e.key===' '||e.key==='F4'||(e.altKey&&e.key==='ArrowDown')){e.preventDefault();open(s);}
+  },true);
+})();
+</script>
+<style id="equaltune-layout-fixes">
+/* Top-bar skins: keep the System audio card and the support link centered with the rest of the bar. */
+body.theme-everyday .side-bottom{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;align-self:center;gap:14px;margin-top:0}
+body.theme-everyday .side-bottom .route-card,body.theme-everyday .side-bottom .support-link{margin:0;white-space:nowrap}
+body.theme-vintage .side-bottom{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;align-self:center;gap:14px;margin-top:0}
+body.theme-vintage .side-bottom .route-card,body.theme-vintage .side-bottom .support-link{margin:0;white-space:nowrap}
+body.theme-variance .side-bottom{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;align-self:center;gap:14px;margin-top:0}
+body.theme-variance .side-bottom .route-card,body.theme-variance .side-bottom .support-link{margin:0;white-space:nowrap}
+body.theme-rack .side-bottom{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;align-self:center;gap:14px;margin-top:0}
+body.theme-rack .side-bottom .route-card,body.theme-rack .side-bottom .support-link{margin:0;white-space:nowrap}
+body.theme-blueprint .side-bottom{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;align-self:center;gap:14px;margin-top:0}
+body.theme-blueprint .side-bottom .route-card,body.theme-blueprint .side-bottom .support-link{margin:0;white-space:nowrap}
+body.theme-paper .side-bottom{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;align-self:center;gap:14px;margin-top:0}
+body.theme-paper .side-bottom .route-card,body.theme-paper .side-bottom .support-link{margin:0;white-space:nowrap}
+body.theme-synthwave .side-bottom{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;align-self:center;gap:14px;margin-top:0}
+body.theme-synthwave .side-bottom .route-card,body.theme-synthwave .side-bottom .support-link{margin:0;white-space:nowrap}
+body.theme-glass .side-bottom{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;align-self:center;gap:14px;margin-top:0}
+body.theme-glass .side-bottom .route-card,body.theme-glass .side-bottom .support-link{margin:0;white-space:nowrap}
+body.theme-aurora .side-bottom{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;align-self:center;gap:14px;margin-top:0}
+body.theme-aurora .side-bottom .route-card,body.theme-aurora .side-bottom .support-link{margin:0;white-space:nowrap}
+/* Use the skin accent for native controls (sliders, checkboxes, meters). */
+input[type=range],input[type=checkbox],input[type=radio],progress{accent-color:var(--blue)}
+</style>
+<style id="equaltune-lite-fx">
+/* Lighter effects (default on Linux): no blur behind panels, no blended or masked shimmer overlay, no whole-graph filters. */
+html.lite-fx *,html.lite-fx *::before,html.lite-fx *::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.lite-fx .graph-wrap::after{mix-blend-mode:normal!important;-webkit-mask-image:none!important;mask-image:none!important}
+html.lite-fx canvas{filter:none!important;animation:none!important}
+/* Pause skin animations while the window is being resized or a point is being dragged, so slow drawing can keep up. */
+html.busy-fx *,html.busy-fx *::before,html.busy-fx *::after{animation-play-state:paused!important}
+</style>
+<script id="equaltune-lite-fx-js">
+(function(){
+  var KEY='equalTuneRichFx';
+  function rich(){try{return localStorage.getItem(KEY)==='1';}catch(e){return false;}}
+  function apply(on){document.documentElement.classList.toggle('lite-fx',!on);}
+  apply(rich());
+  // In lighter mode, cap the canvas glow: large shadow blurs are very slow without graphics acceleration.
+  try{
+    var d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'shadowBlur');
+    if(d&&d.set)Object.defineProperty(CanvasRenderingContext2D.prototype,'shadowBlur',{configurable:true,enumerable:d.enumerable,get:d.get,
+      set:function(v){d.set.call(this,(v>4&&document.documentElement.classList.contains('lite-fx'))?4:v);}});
+  }catch(e){}
+  var bt;
+  function busy(on){document.documentElement.classList.toggle('busy-fx',on);}
+  function busyLater(ms){clearTimeout(bt);bt=setTimeout(function(){busy(false);},ms);}
+  window.addEventListener('resize',function(){if(window.__etSynth)return;busy(true);busyLater(300);});
+  document.addEventListener('pointerdown',function(e){if(e.target&&e.target.closest&&e.target.closest('.graph-wrap')){clearTimeout(bt);busy(true);busyLater(15000);}},true);
+  ['pointerup','pointercancel'].forEach(function(t){window.addEventListener(t,function(){if(document.documentElement.classList.contains('busy-fx'))busyLater(150);},true);});
+  document.addEventListener('DOMContentLoaded',function(){
+    var el=document.getElementById('richFx');
+    if(el){el.checked=rich();el.addEventListener('change',function(){try{localStorage.setItem(KEY,el.checked?'1':'0');}catch(e){}apply(el.checked);window.__etSynth=true;window.dispatchEvent(new Event('resize'));window.__etSynth=false;});}
+    // WebKit can leave a newly applied skin animation idle until the graph is re-shown; re-show it when the skin changes.
+    function skin(){return (document.body.className.match(/theme-[\w-]+/)||[''])[0];}
+    var last=skin(),pending=false,busy=false,pg=document.getElementById('equalizerPage');
+    function restart(){if(!pg||pg.hidden)return;busy=true;pg.hidden=true;void pg.offsetHeight;pg.hidden=false;window.__etSynth=true;window.dispatchEvent(new Event('resize'));window.__etSynth=false;setTimeout(function(){busy=false;},0);}
+    function later(){requestAnimationFrame(function(){requestAnimationFrame(restart);});setTimeout(restart,250);}
+    new MutationObserver(function(){var t=skin();if(t===last)return;last=t;if(pg&&pg.hidden)pending=true;else later();}).observe(document.body,{attributes:true,attributeFilter:['class']});
+    if(pg)new MutationObserver(function(){if(busy||pg.hidden||!pending)return;pending=false;later();}).observe(pg,{attributes:true,attributeFilter:['hidden']});
+  });
+})();
+</script>
 </head>
 <body>
 <div class="shell">
@@ -1525,7 +1699,7 @@
       <div class="route-card" id="routeCard">
         <div class="route-top"><span>System audio</span><span class="dot"></span></div>
         <strong id="routeStatus">EqualTune route ready</strong>
-        <small id="routeDetail">VB-CABLE or playback capture</small>
+        <small id="routeDetail">System audio capture</small>
         <button class="mini-link" id="routeInfo">Configure audio →</button>
       </div>
       <button class="mini-link support-link" id="updateSide" type="button" hidden>⬆ Update available</button>
@@ -1534,11 +1708,11 @@
   </aside>
   <main>
     <header class="topbar">
-      <div class="title"><h1 id="pageTitle">Equalizer</h1><p id="pageSubtitle">Shape your sound across Windows and your favorite apps.</p></div>
+      <div class="title"><h1 id="pageTitle">Equalizer</h1><p id="pageSubtitle">Shape your sound across your whole system and your favorite apps.</p></div>
       <div class="top-actions">
         <div class="select-wrap"><select id="output"><option>Loading audio devices…</option></select></div>
         <div class="pill" id="enginePill"><span class="dot"></span><span id="engineStatus">Connecting audio…</span></div>
-        <button class="power on" id="power" title="Toggle EQ processing" aria-label="Disable EQ">⏻</button>
+        <button class="power on" id="power" title="Toggle EQ processing" aria-label="Disable EQ"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.4 6.8a8 8 0 1 0 11.2 0"/></svg></button>
       </div>
     </header>
     <div class="banner" id="audioBanner"><span aria-hidden="true">●</span><span><strong id="audioBannerTitle">Audio setup needed</strong><span id="audioBannerText"> Choose your listening device, then open Devices to test audio or route system sound.</span></span><button class="small-btn" id="bannerDevices">Set up audio</button></div>
@@ -1608,20 +1782,21 @@
       </div>
     </section>
     <section class="settings-page" id="settingsPage" hidden>
-      <div class="settings-heading"><div><h2>Settings</h2><p>Make EqualTune feel right for the way you listen and work.</p></div><button class="small-btn" id="resetAppearance">Reset appearance</button></div>
+      <div class="settings-heading"><div></div><button class="small-btn" id="resetAppearance">Reset appearance</button></div>
       <div class="settings-group-heading"><h3>App settings</h3></div>
       <section class="panel settings-section">
         <div class="settings-section-heading"><div><h3>Interface preferences</h3><p>Fine-tune the display without changing your audio.</p></div></div>
         <div class="preference-grid">
           <label class="preference-row" for="interfaceScale"><span><strong>Interface size</strong><small>Scale the whole app to fit your screen</small></span><span class="scale-control"><input id="interfaceScale" type="range" min="85" max="120" step="5" value="100"><output id="interfaceScaleValue">100%</output></span></label>
           <label class="preference-row" for="reduceMotion"><span><strong>Reduce motion</strong><small>Limit animated transitions</small></span><input id="reduceMotion" type="checkbox"></label>
+          <label class="preference-row" for="richFx"><span><strong>Rich effects</strong><small>Glows, blur and blended shimmer. Turn off if the interface feels slow.</small></span><input id="richFx" type="checkbox"></label>
           <label class="preference-row" for="showHints"><span><strong>Show guidance</strong><small>Keep short tips beside EQ controls</small></span><input id="showHints" type="checkbox" checked></label>
           <label class="preference-row" for="showRouteCard"><span><strong>Show route summary</strong><small>Keep audio route status in the sidebar</small></span><input id="showRouteCard" type="checkbox" checked></label>
-          <label class="preference-row" for="restoreOutput"><span><strong>Restore sound output</strong><small>If EqualTune stops or crashes, switch Windows sound back to your speakers or headphones</small></span><input id="restoreOutput" type="checkbox" checked></label>
+          <label class="preference-row" for="restoreOutput"><span><strong>Restore sound output</strong><small>If EqualTune stops or crashes, switch your sound output back to your speakers or headphones</small></span><input id="restoreOutput" type="checkbox" checked></label>
           <label class="preference-row" for="deviceProfiles"><span><strong>Remember EQ per output</strong><small>Each headphone or speaker keeps its own EQ and loads it when you switch to it</small></span><input id="deviceProfiles" type="checkbox" checked></label>
           <label class="preference-row" for="skinFollowsPreset"><span><strong>Skin follows preset</strong><small>Each sound preset switches to a matching visual skin; turning this off restores your skin</small></span><input id="skinFollowsPreset" type="checkbox"></label>
           <label class="preference-row" for="liveSpectrum"><span><strong>Live spectrum</strong><small>Show the sound that is playing behind the EQ curve while audio is routed</small></span><input id="liveSpectrum" type="checkbox" checked></label>
-          <label class="preference-row" for="globalHotkeys"><span><strong>Global hotkeys</strong><small>Ctrl+Alt+E EQ on/off · Ctrl+Alt+B A/B compare · Ctrl+Alt+←/→ previous/next preset · Ctrl+Alt+↑/↓ volume</small></span><input id="globalHotkeys" type="checkbox" checked></label>
+          <label class="preference-row" for="globalHotkeys"><span><strong>Global hotkeys</strong><small>Ctrl+Shift+Alt+E EQ on/off · Ctrl+Shift+Alt+B A/B compare · Ctrl+Shift+Alt+N / P next / previous preset</small></span><input id="globalHotkeys" type="checkbox" checked></label>
         </div>
       </section>
       <section class="panel settings-section audio-settings">
@@ -1638,9 +1813,9 @@
         <div class="settings-section-heading"><div><h3>Startup &amp; tray</h3><p>Keep EqualTune running quietly in the background.</p></div></div>
         <div class="preference-grid">
           <label class="preference-row" for="setTray"><span><strong>Keep running in the system tray</strong><small>Closing the window hides EqualTune instead of quitting. Use the tray icon to open it or quit.</small></span><input id="setTray" type="checkbox" checked></label>
-          <label class="preference-row" for="setStartWin"><span><strong>Start EqualTune with Windows</strong><small>Opens EqualTune when you sign in</small></span><input id="setStartWin" type="checkbox"></label>
-          <label class="preference-row" for="setStartMin"><span><strong>Start minimized to the tray</strong><small>When starting with Windows, open quietly without showing the window</small></span><input id="setStartMin" type="checkbox"></label>
-          <label class="preference-row" for="setAutoRoute"><span><strong>Start routing automatically</strong><small>Begin routing system audio as soon as EqualTune opens (needs VB-CABLE)</small></span><input id="setAutoRoute" type="checkbox"></label>
+          <label class="preference-row" for="setStartWin"><span><strong>Start EqualTune at login</strong><small>Opens EqualTune when you sign in</small></span><input id="setStartWin" type="checkbox"></label>
+          <label class="preference-row" for="setStartMin"><span><strong>Start minimized to the tray</strong><small>When starting at login, open quietly without showing the window</small></span><input id="setStartMin" type="checkbox"></label>
+          <label class="preference-row" for="setAutoRoute"><span><strong>Start routing automatically</strong><small>Begin routing system audio as soon as EqualTune opens</small></span><input id="setAutoRoute" type="checkbox"></label>
         </div>
         <div class="skin-actions"><button class="small-btn" id="runSetup" type="button">Run setup again</button></div>
       </section>
@@ -1649,8 +1824,8 @@
         <p class="skin-help" id="updateStatus">EqualTune checks GitHub for new versions in the background.</p>
         <div class="skin-actions"><button class="small-btn" id="checkUpdates" type="button">Check for updates</button><button class="small-btn primary" id="installUpdate" type="button" hidden>Download &amp; install update</button><button class="small-btn" id="updateNotes" type="button" hidden>What's new</button></div>
         <div class="preference-grid"><label class="preference-row" for="setCheckUpdates"><span><strong>Check for updates automatically</strong><small>Looks for a newer version about once a day. Nothing installs without your OK.</small></span><input id="setCheckUpdates" type="checkbox" checked></label></div>
-        <div class="skin-actions"><button class="small-btn primary" id="donateApp" type="button">♥ Support EqualTune</button><button class="small-btn" id="donateVb" type="button">Support VB-Audio (VB-CABLE)</button><button class="small-btn" id="openLogs" type="button">Open log folder</button></div>
-        <p class="skin-help">System-wide routing uses VB-CABLE, a donationware virtual audio device made by VB-Audio Software. Donating to VB-Audio is optional and goes to them, not to EqualTune.</p>
+        <div class="skin-actions"><button class="small-btn primary" id="donateApp" type="button">♥ Support EqualTune</button><button class="small-btn" id="openLogs" type="button">Open log folder</button></div>
+        <p class="skin-help">System-wide routing uses a virtual output that EqualTune creates through PipeWire or PulseAudio, so no extra drivers or downloads are needed.</p>
       </section>
       <div class="settings-group-heading"><h3>Appearance</h3></div>
       <section class="panel settings-section">
@@ -1667,8 +1842,8 @@
       </section>
       <section class="panel settings-section">
         <div class="settings-section-heading"><div><h3>Font</h3><p>Choose a readable type style or load a font file from your device.</p></div></div>
-        <div class="font-choice-row"><label for="fontChoice">Interface font<select id="fontChoice"><option value="segoe">Segoe UI · Windows native</option><option value="arial">Arial · familiar sans</option><option value="verdana">Verdana · wide and clear</option><option value="tahoma">Tahoma · compact sans</option><option value="trebuchet">Trebuchet MS · rounded sans</option><option value="georgia">Georgia · serif</option><option value="times">Times New Roman · classic serif</option><option value="consolas">Consolas · monospaced</option><option value="custom">Custom font · upload</option></select></label><label class="font-upload" id="fontUploadWrap" for="customFontFile" hidden><span id="customFontName">Choose a font file</span><input type="file" id="customFontFile" accept=".woff2,.woff,.ttf,.otf,font/woff2,font/woff,font/ttf,font/otf" aria-label="Upload a custom font"></label></div>
-        <p class="font-description" id="fontDescription">Segoe UI is optimized for Windows and keeps the interface familiar.</p>
+        <div class="font-choice-row"><label for="fontChoice">Interface font<select id="fontChoice"><option value="segoe">System default · native</option><option value="arial">Arial · familiar sans</option><option value="verdana">Verdana · wide and clear</option><option value="tahoma">Tahoma · compact sans</option><option value="trebuchet">Trebuchet MS · rounded sans</option><option value="georgia">Georgia · serif</option><option value="times">Times New Roman · classic serif</option><option value="consolas">Consolas · monospaced</option><option value="custom">Custom font · upload</option></select></label><label class="font-upload" id="fontUploadWrap" for="customFontFile" hidden><span id="customFontName">Choose a font file</span><input type="file" id="customFontFile" accept=".woff2,.woff,.ttf,.otf,font/woff2,font/woff,font/ttf,font/otf" aria-label="Upload a custom font"></label></div>
+        <p class="font-description" id="fontDescription">The system font keeps the interface familiar and easy to read.</p>
       </section>
       <section class="panel settings-section">
         <div class="settings-section-heading"><div><h3>Base colors</h3><p>Change the workspace and panel surfaces independently of the accent color.</p></div></div>
@@ -1708,23 +1883,23 @@
       <div class="settings-footer"><span>Appearance settings and saved skins stay on this device. Export a skin file to share it.</span><span id="settingsSaveStatus" role="status">Changes save automatically</span></div>
     </section>
     <section class="settings-page devices-page" id="devicesPage" hidden>
-      <div class="settings-heading"><div><h2>Devices &amp; audio</h2><p>Choose where sound comes from and where EqualTune sends it.</p></div><div class="skin-actions" style="margin:0"><button class="small-btn" id="backToEqualizer" type="button">← Equalizer</button><button class="small-btn" id="refreshDevicesTop" type="button">↻ Refresh devices</button></div></div>
+      <div class="settings-heading"><div></div><div class="skin-actions" style="margin:0"><button class="small-btn" id="backToEqualizer" type="button">← Equalizer</button><button class="small-btn" id="refreshDevicesTop" type="button">↻ Refresh devices</button></div></div>
       <section class="panel settings-section">
         <div class="settings-section-heading"><div><h3>Audio route</h3><p>Select a source mode, choose the source device, then start the route or an audio test.</p></div></div>
         <div class="route-fields">
-          <label>Audio source mode<select id="routeMode"><option value="cable">VB-CABLE recording endpoint</option><option value="loopback">Playback capture · diagnostic copy</option><option value="microphone">Microphone / recording input</option></select></label>
+          <label>Audio source mode<select id="routeMode"><option value="system">System audio · EqualTune virtual output</option><option value="loopback">Playback capture · diagnostic copy</option><option value="microphone">Microphone / recording input</option></select></label>
           <label>Source device<select id="sourceDevice"></select></label>
           <label>Listening output <span id="routeOutputSummary">Using the output selected in the top bar</span><select id="routeOutput" hidden></select></label>
           <label>Test tone frequency <span id="testFrequencyValue">1000 Hz</span><input id="testFrequency" type="range" min="40" max="12000" value="1000"></label>
         </div>
-        <p class="skin-help" id="routeModeHelp">VB-CABLE routes Windows playback through EqualTune. Install and select its recording endpoint to use this mode.</p>
+        <p class="skin-help" id="routeModeHelp">System audio mode routes everything your computer plays through EqualTune using a virtual output that EqualTune creates.</p>
         <div class="route-actions"><button class="primary" id="startRoute">▶ Start system audio route</button><button id="startTone">▶ Start test tone</button><button id="startSweep">↗ EQ sweep</button><button id="refreshDevices">↻ Refresh devices</button></div>
         <div class="route-state" id="routeModalStatus">Audio engine initializing.</div>
       </section>
       <section class="panel settings-section">
         <div class="settings-section-heading"><div><h3>Signal levels</h3><p>Watch the selected source and output while testing or routing audio.</p></div><span class="pill" id="devicesPageStatus">Connecting audio…</span></div>
         <div class="device-meter-grid"><label>Input <output id="inputMeterValue">0%</output><progress id="inputMeter" max="100" value="0"></progress></label><label>Output <output id="outputMeterValue">0%</output><progress id="outputMeter" max="100" value="0"></progress></label></div>
-        <p class="skin-help">Playback capture is a diagnostic copy: the original may remain audible on its current device. For system-wide routing, set VB-CABLE as the Windows playback device first.</p>
+        <p class="skin-help">Playback capture is a diagnostic copy: the original may remain audible on its current device. For system-wide routing, use System audio mode.</p>
       </section>
     </section>
   </main>
@@ -1735,13 +1910,13 @@
     <div class="wiz-step" data-step="0">
       <h2 id="wizTitle">Welcome to EqualTune</h2>
       <p>EqualTune shapes the sound of everything your PC plays — music, games, videos and calls — with a live equalizer. A quick setup gets you listening in under a minute.</p>
-      <ul class="wiz-list"><li>Check that VB-CABLE (the free virtual audio device EqualTune routes sound through) is installed</li><li>Pick the headphones or speakers you listen on</li><li>Choose how EqualTune starts</li></ul>
+      <ul class="wiz-list"><li>Check that your audio system is ready</li><li>Pick the headphones or speakers you listen on</li><li>Choose how EqualTune starts</li></ul>
     </div>
     <div class="wiz-step" data-step="1">
       <h2>Audio setup</h2>
-      <div class="wiz-status" id="wizCableStatus">Checking for VB-CABLE…</div>
-      <div class="skin-actions" id="wizCableActions" hidden><button class="small-btn primary" id="wizGetCable" type="button">Get VB-CABLE</button><button class="small-btn" id="wizRecheck" type="button">I installed it — check again</button></div>
-      <p id="wizCableHelp" hidden>VB-CABLE is donationware by VB-Audio Software. After installing it, Windows may ask you to restart before it appears.</p>
+      <div class="wiz-status" id="wizAudioStatus">Checking your audio system…</div>
+      <div class="skin-actions" id="wizAudioActions" hidden><button class="small-btn primary" id="wizRecheck" type="button">Check again</button></div>
+      <p id="wizAudioHelp" hidden>EqualTune works with PipeWire or PulseAudio, which most Linux desktops already include. Install one, then choose Check again.</p>
       <div class="route-fields" style="grid-template-columns:1fr"><label>Where do you listen?<select id="wizOutput"></select></label></div>
       <p>This is the headphones or speakers EqualTune plays the equalized sound on.</p>
     </div>
@@ -1749,14 +1924,14 @@
       <h2>How should EqualTune start?</h2>
       <div class="wiz-prefs">
         <label><input id="wizTray" type="checkbox" checked><span><strong>Keep running in the system tray</strong><small>Closing the window hides EqualTune so your sound stays equalized</small></span></label>
-        <label><input id="wizStartWin" type="checkbox"><span><strong>Start EqualTune with Windows</strong><small>Opens when you sign in</small></span></label>
+        <label><input id="wizStartWin" type="checkbox"><span><strong>Start EqualTune at login</strong><small>Opens when you sign in</small></span></label>
         <label><input id="wizAutoRoute" type="checkbox"><span><strong>Start routing automatically</strong><small>Begin equalizing as soon as EqualTune opens</small></span></label>
       </div>
       <p>You can change any of these later in Settings.</p>
     </div>
     <div class="wiz-step" data-step="3">
       <h2>You're all set</h2>
-      <ul class="wiz-list"><li><strong>Ctrl+Alt+E</strong> — EQ on / off</li><li><strong>Ctrl+Alt+B</strong> — A/B compare</li><li><strong>Ctrl+Alt+← / →</strong> — previous / next preset</li><li><strong>Ctrl+Alt+↑ / ↓</strong> — volume</li></ul>
+      <ul class="wiz-list"><li><strong>Ctrl+Shift+Alt+E</strong> — EQ on / off</li><li><strong>Ctrl+Shift+Alt+B</strong> — A/B compare</li><li><strong>Ctrl+Shift+Alt+N / P</strong> — next / previous preset</li></ul>
       <div class="wiz-prefs"><label id="wizStartNowRow"><input id="wizStartNow" type="checkbox" checked><span><strong>Start routing now</strong><small>Equalize everything your PC plays</small></span></label></div>
     </div>
     <div class="wiz-actions"><button class="small-btn" id="wizSkip" type="button">Skip setup</button><span class="grow"></span><button class="small-btn" id="wizBack" type="button">Back</button><button class="small-btn primary" id="wizNext" type="button">Next</button></div>
@@ -1913,7 +2088,7 @@
     basicHost.appendChild(card);
   });
   const graph=document.getElementById('graph'),ctx=graph.getContext('2d');
-  const postNative = message => { if(window.chrome?.webview) window.chrome.webview.postMessage(JSON.stringify(message)); else if(message.type==='refresh') notify('This preview uses sample devices; the desktop app lists your Windows audio devices.'); else if(['route','tone','stop'].includes(message.type)) notify('Audio playback is available when this design is hosted in the EqualTune desktop app.'); };
+  const postNative = message => { if(window.chrome?.webview) window.chrome.webview.postMessage(JSON.stringify(message)); else if(message.type==='refresh') notify('This preview uses sample devices; the desktop app lists your audio devices.'); else if(['route','tone','stop'].includes(message.type)) notify('Audio playback is available when this design is hosted in the EqualTune desktop app.'); };
   let selectedAudioBand=baseBandIds[0];
   function sendAudioEq(){solveEffectiveGains();postNative({type:'eq',enabled:document.getElementById('power').classList.contains('on'),bands:visibleBandIds().map(i=>({id:i,frequency:freqs[i],gain:effGains[i],q:effQs[i],filter:filters[i]})),selected:selectedAudioBand});}
   const responseLimit=24;
@@ -2072,10 +2247,11 @@
   function visibleBandIds(){return document.body.classList.contains('advanced')?activeBandIds:baseBandIds;}
   function rawTotalResponse(f){return visibleBandIds().reduce((sum,i)=>sum+bandResponse(i,f),0);}
   function totalResponse(f){return clamp(rawTotalResponse(f),-responseLimit,responseLimit);}
+  let drawQueued=false;function drawSoon(){if(drawQueued)return;drawQueued=true;requestAnimationFrame(()=>{drawQueued=false;draw();});}
   function draw(){
     solveEffectiveGains();
     const rect=graph.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
-    graph.width=Math.max(1,Math.floor(rect.width*dpr));graph.height=Math.max(1,Math.floor(rect.height*dpr));
+    {const nw=Math.max(1,Math.floor(rect.width*dpr)),nh=Math.max(1,Math.floor(rect.height*dpr));if(graph.width!==nw||graph.height!==nh){graph.width=nw;graph.height=nh;}else if(ctx.reset)ctx.reset();else graph.width=nw;}
     ctx.setTransform(dpr,0,0,dpr,0,0);const w=rect.width,h=rect.height;
     const styles=getComputedStyle(document.documentElement),uiFont=styles.getPropertyValue('--ui-font').trim()||'"Segoe UI",sans-serif',graphBg=styles.getPropertyValue('--bg').trim()||'#101116',ext=extraSkins[curStyle()]||null,style=['equaltune','immersive','variance','everyday','precision','vintage','modular'].find(name=>document.body.classList.contains(`theme-${name}`))||'equaltune',axisText=ext?ext.axis:({equaltune:'#b8c0d0',immersive:'#d0d1f0',variance:'#d3cff7',everyday:'#435b67',precision:'#c2d0df',vintage:'#edcf98',modular:'#c4dce4'})[style];
     const advanced=document.body.classList.contains('advanced'),ids=visibleBandIds();
@@ -2170,7 +2346,7 @@
   window.addEventListener('pagehide',persistCurrentEq);
   function markCustom(){document.getElementById('preset').value='Custom';committedPresetValue='Custom';sendAudioEq();scheduleCurrentEqSave();}
   function graphBands(){return visibleBandIds();}
-  draw();window.addEventListener('resize',draw);
+  draw();window.addEventListener('resize',drawSoon);
   bandHost.addEventListener('input',e=>{const t=e.target;if(t.matches('[data-band]')){const i=Number(t.dataset.band);gains[i]=Number(t.value);extendedGainBackup[i]=null;syncBand(i);syncBasic();markCustom();draw();}else if(t.matches('[data-freq]')){const i=Number(t.dataset.freq);freqs[i]=clamp(Number(t.value)||20,20,20000);syncBand(i);markCustom();draw();}else if(t.matches('[data-q]')){const i=Number(t.dataset.q);qs[i]=clamp(Number(t.value)||1,.2,10);syncBand(i);markCustom();draw();}else if(t.matches('[data-name]')){const i=Number(t.dataset.name);bandNames[i]=t.value;customBandNames[i]=Boolean(t.value.trim());renderVintageBandSelector();syncSelectedBand();document.getElementById('preset').value='Custom';committedPresetValue='Custom';scheduleCurrentEqSave();}});
   bandHost.addEventListener('change',e=>{if(e.target.matches('[data-filter]')){const i=Number(e.target.dataset.filter);filters[i]=e.target.value;markCustom();draw();}else if(e.target.matches('[data-name]')){const i=Number(e.target.dataset.name),name=e.target.value.trim();customBandNames[i]=Boolean(name);bandNames[i]=name;e.target.value=name||`Band ${displayBandNumber(i)}`;renderVintageBandSelector();syncSelectedBand();markCustom();}else if(e.target.matches('[data-freq]')){if(!customBandOrder)sortActiveBands();renderBandCards();markCustom();draw();}});
   bandHost.addEventListener('click',e=>{const remove=e.target.closest('[data-remove]');if(remove){removeBand(Number(remove.dataset.remove));return;}const card=e.target.closest('[data-card]');if(card){selectedAudioBand=Number(card.dataset.card);syncSelectedBand();draw();sendAudioEq();}});
@@ -2191,7 +2367,7 @@
     });
     return clamp(out,20,20000);
   }
-  function moveBand(i,x,y){selectedAudioBand=i;const group=basicGroups.find(g=>g.id===i);freqs[i]=freqFor(x);if(group)freqs[i]=clamp(freqs[i],group.min,group.max);if(!group)freqs[i]=keepBandSpacing(i,freqs[i]);const nextGain=gainFromMarker(i,dbFor(y));if(Math.abs(nextGain-gains[i])>.05)extendedGainBackup[i]=null;gains[i]=nextGain;syncBand(i);syncBasic();markCustom();draw();}
+  function moveBand(i,x,y){selectedAudioBand=i;const group=basicGroups.find(g=>g.id===i);freqs[i]=freqFor(x);if(group)freqs[i]=clamp(freqs[i],group.min,group.max);if(!group)freqs[i]=keepBandSpacing(i,freqs[i]);const nextGain=gainFromMarker(i,dbFor(y));if(Math.abs(nextGain-gains[i])>.05)extendedGainBackup[i]=null;gains[i]=nextGain;syncBand(i);syncBasic();markCustom();drawSoon();}
   graph.addEventListener('pointerdown',e=>{const r=graph.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;let best=18;graphBands().forEach(i=>{const d=Math.hypot(x-xFor(freqs[i]),y-yFor(markerGain(i)));if(d<best){best=d;draggingBand=i;}});if(draggingBand<0&&document.body.classList.contains('advanced')&&x>=plot.left&&x<=plot.left+plot.gw&&y>=plot.top&&y<=plot.top+plot.gh){draggingBand=addBand(freqFor(x),clamp(dbFor(y),-gainLimit(),gainLimit()));if(draggingBand>=0)moveBand(draggingBand,x,y);}if(draggingBand>=0){selectedAudioBand=draggingBand;syncSelectedBand();draw();graph.setPointerCapture(e.pointerId);graph.style.cursor='grabbing';e.preventDefault();}});
   graph.addEventListener('pointermove',e=>{if(draggingBand<0){const r=graph.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;let near=false;graphBands().forEach(i=>{if(Math.hypot(x-xFor(freqs[i]),y-yFor(markerGain(i)))<13)near=true;});graph.style.cursor=near?'grab':document.body.classList.contains('advanced')?'crosshair':'default';return;}const r=graph.getBoundingClientRect();moveBand(draggingBand,e.clientX-r.left,e.clientY-r.top);});
   graph.addEventListener('pointerup',()=>{const moved=draggingBand>=0;draggingBand=-1;if(moved){if(!customBandOrder)sortActiveBands();renderBandCards();}graph.style.cursor='crosshair';});
@@ -2224,7 +2400,7 @@
   const designDescriptions={studio:'A roomy workspace with a clear navigation rail and four EQ bands per row. All enabled bands stay available below the graph.',compact:'A denser workspace fits up to six smaller EQ band cards per row to reduce scrolling.',focus:'A slim icon rail, taller graph, and two large EQ band cards per row prioritize precision editing.'};
   const styleDescriptions={equaltune:'The original Equal Tune studio interface with the familiar sidebar, EQ graph, and editable band controls.',immersive:'A cinematic sound-stage with a luminous response curve, wide graph, and large instrument-like band panels.',variance:'A dynamic cinema-inspired workspace with an atmospheric preset banner, luminous response graph, and expressive tone controls.',everyday:'A clean, bright workspace with a simplified graph and compact, readable band rows.',precision:'A technical analysis view with a finely divided graph and data-dense band strips.',vintage:'A warm analog console with a gold-toned graph, engraved-style controls, and tactile band panels.',modular:'A modular live workspace with frequency zones, color-coded graph regions, and distinct control modules.'};
   Object.keys(extraSkins).forEach(k=>{styleDescriptions[k]=extraSkins[k].desc;});
-  const fontPresets={segoe:{family:'"Segoe UI", Tahoma, sans-serif',description:'Segoe UI is optimized for Windows and keeps the interface familiar.'},arial:{family:'Arial, Helvetica, sans-serif',description:'Arial is familiar, broadly available, and easy to scan.'},verdana:{family:'Verdana, Geneva, sans-serif',description:'Verdana uses wider letterforms for clear reading at smaller sizes.'},tahoma:{family:'Tahoma, Verdana, sans-serif',description:'Tahoma keeps a compact shape while staying crisp on screen.'},trebuchet:{family:'"Trebuchet MS", Arial, sans-serif',description:'Trebuchet MS gives the interface a softer, rounded sans-serif style.'},georgia:{family:'Georgia, "Times New Roman", serif',description:'Georgia uses sturdy serif letterforms designed for screen reading.'},times:{family:'"Times New Roman", Georgia, serif',description:'Times New Roman provides a traditional, compact serif style.'},consolas:{family:'Consolas, "Courier New", monospace',description:'Consolas gives the interface a precise, monospaced technical look.'},custom:{family:'"EqualTuneUploaded", "Segoe UI", sans-serif',description:'Your uploaded font is applied locally to this app.'}};
+  const fontPresets={segoe:{family:'"Segoe UI", Tahoma, sans-serif',description:'The system font keeps the interface familiar and easy to read.'},arial:{family:'Arial, Helvetica, sans-serif',description:'Arial is familiar, broadly available, and easy to scan.'},verdana:{family:'Verdana, Geneva, sans-serif',description:'Verdana uses wider letterforms for clear reading at smaller sizes.'},tahoma:{family:'Tahoma, Verdana, sans-serif',description:'Tahoma keeps a compact shape while staying crisp on screen.'},trebuchet:{family:'"Trebuchet MS", Arial, sans-serif',description:'Trebuchet MS gives the interface a softer, rounded sans-serif style.'},georgia:{family:'Georgia, "Times New Roman", serif',description:'Georgia uses sturdy serif letterforms designed for screen reading.'},times:{family:'"Times New Roman", Georgia, serif',description:'Times New Roman provides a traditional, compact serif style.'},consolas:{family:'Consolas, "Courier New", monospace',description:'Consolas gives the interface a precise, monospaced technical look.'},custom:{family:'"EqualTuneUploaded", "Segoe UI", sans-serif',description:'Your uploaded font is applied locally to this app.'}};
   let customFontLoaded=false,customFontFace=null;
   function openSkinAssetDatabase(){return new Promise((resolve,reject)=>{if(!window.indexedDB){reject(new Error('Local asset storage is unavailable.'));return;}const request=indexedDB.open('EqualTuneSkinAssets',1);request.onupgradeneeded=()=>request.result.createObjectStore('images');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error||new Error('Could not open skin asset storage.'));});}
   async function storeSkinImage(data,name){const db=await openSkinAssetDatabase(),id=window.crypto?.randomUUID?.()||`image-${Date.now()}-${Math.random().toString(36).slice(2)}`;return new Promise((resolve,reject)=>{const tx=db.transaction('images','readwrite');tx.objectStore('images').put({data,name},id);tx.oncomplete=()=>{db.close();resolve(id);};tx.onerror=()=>{db.close();reject(tx.error||new Error('Could not save the background image.'));};});}
@@ -2334,7 +2510,7 @@
   function showPage(page){
     const settings=page==='Settings',devices=page==='Devices',presets=page==='Presets';document.getElementById('equalizerPage').hidden=settings||devices||presets;document.getElementById('settingsPage').hidden=!settings;document.getElementById('devicesPage').hidden=!devices;document.getElementById('presetsPage').hidden=!presets;
     document.getElementById('pageTitle').textContent=settings?'Settings':devices?'Devices & audio':presets?'Presets':'Equalizer';
-    document.getElementById('pageSubtitle').textContent=settings?'Customize your workspace, colors, and audio tools.':devices?'Choose audio devices, route sound, and check signal levels.':presets?'Save, organize, and switch between your EQ presets.':'Shape your sound across Windows and your favorite apps.';
+    document.getElementById('pageSubtitle').textContent=settings?'Customize your workspace, colors, and audio tools.':devices?'Choose audio devices, route sound, and check signal levels.':presets?'Save, organize, and switch between your EQ presets.':'Shape your sound across your whole system and your favorite apps.';
     document.querySelectorAll('.nav button[data-page]').forEach(button=>button.classList.toggle('active',button.dataset.page===page));
     if(presets&&typeof renderPresetsPage==='function')renderPresetsPage();
     if(!settings&&!devices&&!presets)draw();
@@ -2485,7 +2661,7 @@
     if(button.dataset.running==='true'){postNative({type:'stop'});return;}
     postNative({type:'route',mode:document.getElementById('routeMode').value,sourceId:document.getElementById('sourceDevice').value,outputId:document.getElementById('routeOutput').value});
   };
-  let prototypeCableAvailable=null;
+  let prototypeSinkAvailable=null;
   // ---- Per-output EQ profiles: each playback device remembers its own EQ ----
   const deviceProfileKey='equalTuneDeviceProfiles';
   let deviceProfilesOn=true,activeDeviceId='';
@@ -2509,17 +2685,17 @@
   document.getElementById('deviceProfiles').onchange=e=>{deviceProfilesOn=e.target.checked;try{localStorage.setItem('equalTuneDeviceProfilesOn',String(deviceProfilesOn));}catch{}if(deviceProfilesOn)saveDeviceProfile(activeDeviceId);};
 
   window.equalTuneSetDevices=(data)=>{
-    prototypeCableAvailable=Boolean(data.virtualCable);
+    prototypeSinkAvailable=Boolean(data.virtualSink);
     const fill=(id,items,selected)=>{const select=document.getElementById(id);select.replaceChildren(...items.map(d=>{const o=document.createElement('option');o.value=d.id;o.textContent=d.name;if(d.id===selected)o.selected=true;return o;}));};
     const previousOutput=(()=>{const cur=document.getElementById('output').value;if(data.outputs.some(d=>d.id===cur))return cur;try{return localStorage.getItem('equalTuneLastOutput')||'';}catch{return '';}})(),defaultOutput=data.outputs.find(d=>d.id===previousOutput)?.id||data.outputs.find(d=>d.isDefault)?.id;fill('output',data.outputs,defaultOutput);fill('routeOutput',data.outputs,defaultOutput);
     document.getElementById('routeOutputSummary').textContent=`${document.getElementById('output').selectedOptions[0]?.textContent||'Choose an output'} · change it in the top bar`;
     switchDeviceProfile(document.getElementById('output').value);
-    const previousMode=document.getElementById('routeMode').value;document.getElementById('routeMode').value=previousMode==='cable'&&!data.virtualCable?'loopback':previousMode|| (data.virtualCable?'cable':'loopback');
-    const setSource=()=>{const mode=document.getElementById('routeMode').value;const list=mode==='loopback'?data.playbacks:data.captures;const selected=mode==='cable'?data.virtualCableCaptureId:list.find(d=>d.isDefault)?.id;fill('sourceDevice',list,selected);document.getElementById('routeModeHelp').textContent=mode==='cable'?'VB-CABLE routes Windows playback through EqualTune. Set CABLE Input as the Windows playback device, then choose its recording endpoint here.':mode==='loopback'?'Playback capture is a diagnostic copy of one output. The original audio may remain audible on that device.':'Microphone mode processes a selected recording input and sends it to your chosen listening output.';};
+    const previousMode=document.getElementById('routeMode').value;document.getElementById('routeMode').value=previousMode==='system'&&!data.virtualSink?'loopback':previousMode|| (data.virtualSink?'system':'loopback');
+    const setSource=()=>{const mode=document.getElementById('routeMode').value;const list=mode==='loopback'?data.playbacks:data.captures;const selected=mode==='system'?data.virtualSinkCaptureId:list.find(d=>d.isDefault)?.id;fill('sourceDevice',list,selected);document.getElementById('routeModeHelp').textContent=mode==='system'?'System audio mode routes everything your computer plays through EqualTune using a virtual output that EqualTune creates.':mode==='loopback'?'Playback capture is a diagnostic copy of one output. The original audio may remain audible on that device.':'Microphone mode processes a selected recording input and sends it to your chosen listening output.';};
     setSource();document.getElementById('routeMode').onchange=setSource;
     window.equalTuneSetStatus(data.outputs.length?'Ready':'Setup needed',0,0);
     document.getElementById('footerStatus').textContent=data.outputs.length?'':'No active audio outputs found';
-    if(data.outputs.length&& !data.virtualCable)document.getElementById('routeDetail').textContent='Playback is ready · VB-CABLE is not detected';
+    if(data.outputs.length&& !data.virtualSink)document.getElementById('routeDetail').textContent='Playback is ready · system routing is not available';
   };
   document.getElementById('routeOutput').onchange=e=>{try{localStorage.setItem('equalTuneLastOutput',e.target.value);}catch{}switchDeviceProfile(e.target.value);document.getElementById('output').value=e.target.value;postNative({type:'output',id:e.target.value});};
   window.equalTuneSetStatus=(status,input,output)=>{
@@ -2535,7 +2711,7 @@
     document.getElementById('engineStatus').textContent=label;
     document.getElementById('devicesPageStatus').textContent=label;
     document.getElementById('routeStatus').textContent=label;
-    const detail=error?'Audio needs attention · open Devices for details':setup?'No active audio outputs found':preview?'Audio setup is required in the desktop app':routed?'System audio is passing through EqualTune':activeTest?`${raw} is playing · system audio is not being routed`:prototypeCableAvailable===false?'Playback is ready · VB-CABLE is not detected':'Audio engine ready · no route active';
+    const detail=error?'Audio needs attention · open Devices for details':setup?'No active audio outputs found':preview?'Audio setup is required in the desktop app':routed?'System audio is passing through EqualTune':activeTest?`${raw} is playing · system audio is not being routed`:prototypeSinkAvailable===false?'Playback is ready · system routing is not available':'Audio engine ready · no route active';
     document.getElementById('routeDetail').textContent=detail;
     document.getElementById('routeModalStatus').textContent=error?'Needs attention · check the audio message below':setup?'No active output devices found':preview?'Preview mode · audio requires the desktop app':routed?'System audio is passing through EqualTune':activeTest?`${raw} is active`:'Ready · no route active';
     document.getElementById('settingsAudioStatus').textContent=error?'Audio needs attention · open Devices to review':setup?'No active audio outputs found · connect an output device':preview?'Preview only · audio requires the desktop app':routed?'System audio is passing through EqualTune.':activeTest?`${raw} is active · no system route`:'Audio engine ready · no route active.';
@@ -2555,8 +2731,8 @@
     window.equalTuneSetDevices({
       outputs:[{id:'preview-headphones',name:'Headphones · Default output',isDefault:true},{id:'preview-speakers',name:'Speakers · High Definition Audio'}],
       playbacks:[{id:'preview-loopback',name:'Speakers · High Definition Audio',isDefault:true}],
-      captures:[{id:'preview-cable',name:'CABLE Input · VB-Audio Virtual Cable',isDefault:true}],
-      virtualCable:true,virtualCableCaptureId:'preview-cable'
+      captures:[{id:'preview-sink',name:'EqualTune virtual output',isDefault:true}],
+      virtualSink:true,virtualSinkCaptureId:'preview-sink'
     });
     window.equalTuneSetStatus('Preview',0,0);
     document.getElementById('footerStatus').textContent='Preview mode · playback needs the desktop app';
@@ -3049,7 +3225,7 @@
     if(!spectrumOn){vizTarget=[];vizShown=[];vizPeak=[];vizHold=[];}
     drawSpectrum();postNative({type:'spectrum',enabled:spectrumOn});
   }
-  window.addEventListener('resize',()=>drawSpectrum());
+  {let sq=false;window.addEventListener('resize',()=>{if(sq)return;sq=true;requestAnimationFrame(()=>{sq=false;drawSpectrum();});});}
   document.getElementById('liveSpectrum').onchange=e=>setSpectrumOn(e.target.checked);
   document.getElementById('audioVizToggle').onclick=()=>setSpectrumOn(!spectrumOn);
   {const btn=document.getElementById('audioVizToggle');btn.setAttribute('aria-pressed',String(spectrumOn));btn.textContent=`Audio visual: ${spectrumOn?'On':'Off'}`;document.getElementById('liveSpectrum').checked=spectrumOn;}
@@ -3090,20 +3266,20 @@
     const note=document.getElementById('soundEngineNote');if(note)note.textContent=info.sound?`Audio engine is using: ${info.sound}`:'';
   };
   window.equalTuneSetAbout=info=>{const v=document.getElementById('aboutVersion');if(v&&info&&info.version)v.textContent=info.version;};
-  [['donateApp','donate'],['donateSide','donate'],['donateVb','vbaudio'],['openLogs','logs']].forEach(([id,which])=>{const el=document.getElementById(id);if(el)el.addEventListener('click',()=>{if(window.chrome?.webview)postNative({type:'openurl',which});else notify('Opens in the desktop app.');});});
+  [['donateApp','donate'],['donateSide','donate'],['openLogs','logs']].forEach(([id,which])=>{const el=document.getElementById(id);if(el)el.addEventListener('click',()=>{if(window.chrome?.webview)postNative({type:'openurl',which});else notify('Opens in the desktop app.');});});
   // ---- App settings (tray, startup) and the first-run wizard ----
-  const appSettings={closeToTray:true,startWithWindows:false,startMinimized:false,autoRoute:false,checkUpdates:true,firstRunDone:true};
+  const appSettings={closeToTray:true,startAtLogin:false,startMinimized:false,autoRoute:false,checkUpdates:true,firstRunDone:true};
   let lastDevices=null,autoRouteDone=false,appSettingsReady=false,wizardStep=0;
   const wz=id=>document.getElementById(id);
   const sendAppSettings=()=>postNative(Object.assign({type:'app'},appSettings));
-  const appChecks=[['setTray','closeToTray'],['setStartWin','startWithWindows'],['setStartMin','startMinimized'],['setAutoRoute','autoRoute'],['setCheckUpdates','checkUpdates'],['wizTray','closeToTray'],['wizStartWin','startWithWindows'],['wizAutoRoute','autoRoute']];
-  function syncAppUi(){for(const [id,key] of appChecks){const el=wz(id);if(el)el.checked=Boolean(appSettings[key]);}wz('setStartMin').disabled=!appSettings.startWithWindows;}
+  const appChecks=[['setTray','closeToTray'],['setStartWin','startAtLogin'],['setStartMin','startMinimized'],['setAutoRoute','autoRoute'],['setCheckUpdates','checkUpdates'],['wizTray','closeToTray'],['wizStartWin','startAtLogin'],['wizAutoRoute','autoRoute']];
+  function syncAppUi(){for(const [id,key] of appChecks){const el=wz(id);if(el)el.checked=Boolean(appSettings[key]);}wz('setStartMin').disabled=!appSettings.startAtLogin;}
   for(const [id,key] of appChecks){wz(id).onchange=e=>{appSettings[key]=e.target.checked;syncAppUi();sendAppSettings();};}
   function updateWizard(){
-    const has=Boolean(lastDevices&&lastDevices.virtualCable),box=wz('wizCableStatus');
+    const has=Boolean(lastDevices&&lastDevices.virtualSink),box=wz('wizAudioStatus');
     box.className='wiz-status '+(has?'ok':'warn');
-    box.textContent=has?'✓ VB-CABLE was found. You are ready to route system audio.':'VB-CABLE was not found. EqualTune needs it to equalize everything your PC plays.';
-    wz('wizCableActions').hidden=has;wz('wizCableHelp').hidden=has;wz('wizStartNowRow').hidden=!has;
+    box.textContent=has?'✓ Your audio system is ready. You can route system audio.':'No supported audio system was found. EqualTune needs PipeWire or PulseAudio to equalize everything your computer plays.';
+    wz('wizAudioActions').hidden=has;wz('wizAudioHelp').hidden=has;wz('wizStartNowRow').hidden=!has;
     const sel=wz('wizOutput'),outs=lastDevices?.outputs||[],current=wz('routeOutput').value;
     sel.replaceChildren(...outs.map(d=>{const o=document.createElement('option');o.value=d.id;o.textContent=d.name;if(d.id===current)o.selected=true;return o;}));
   }
@@ -3120,23 +3296,23 @@
   function finishWizard(startRoute){
     wz('setupWizard').classList.remove('open');
     appSettings.firstRunDone=true;sendAppSettings();
-    if(startRoute&&lastDevices?.virtualCable&&wz('startRoute').dataset.running!=='true')wz('startRoute').click();
+    if(startRoute&&lastDevices?.virtualSink&&wz('startRoute').dataset.running!=='true')wz('startRoute').click();
     notify('Setup complete. You can rerun it from Settings.');
   }
   wz('wizNext').onclick=()=>{if(wizardStep===3)finishWizard(wz('wizStartNow').checked);else showWizardStep(wizardStep+1);};
   wz('wizBack').onclick=()=>showWizardStep(Math.max(0,wizardStep-1));
   wz('wizSkip').onclick=()=>finishWizard(false);
-  wz('wizGetCable').onclick=()=>postNative({type:'openurl',which:'vbaudio'});
+  
   wz('wizRecheck').onclick=()=>postNative({type:'refresh'});
   wz('wizOutput').onchange=e=>{const r=wz('routeOutput');r.value=e.target.value;r.onchange({target:r});};
   wz('runSetup').onclick=openWizard;
   function maybeAutoRoute(){
     if(autoRouteDone||!appSettingsReady||!lastDevices)return;
-    if(appSettings.autoRoute&&appSettings.firstRunDone&&lastDevices.virtualCable){autoRouteDone=true;setTimeout(()=>{if(wz('startRoute').dataset.running!=='true')wz('startRoute').click();},500);}
+    if(appSettings.autoRoute&&appSettings.firstRunDone&&lastDevices.virtualSink){autoRouteDone=true;setTimeout(()=>{if(wz('startRoute').dataset.running!=='true')wz('startRoute').click();},500);}
   }
   const baseSetDevices=window.equalTuneSetDevices;
   window.equalTuneSetDevices=data=>{
-    if(data.virtualCable&&!(lastDevices&&lastDevices.virtualCable))wz('routeMode').value='cable';
+    if(data.virtualSink&&!(lastDevices&&lastDevices.virtualSink))wz('routeMode').value='system';
     const hadList=Boolean(lastDevices),prevIds=new Set((lastDevices?.outputs||[]).map(d=>d.id));
     lastDevices=data;baseSetDevices(data);
     // A saved output (e.g. Bluetooth earbuds) that connects after launch is switched to automatically.

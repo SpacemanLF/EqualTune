@@ -1,6 +1,6 @@
 namespace EqualTune.AudioLab;
 
-internal static class FilterNames
+public static class FilterNames
 {
     public const string Bell = "Bell / peak";
     public const string LowShelf = "Low shelf";
@@ -17,7 +17,7 @@ internal static class FilterNames
 }
 
 /// <summary>Shared RBJ biquad coefficients for every filter shape the EQ supports.</summary>
-internal readonly record struct BiquadCoefficients(double B0, double B1, double B2, double A1, double A2)
+public readonly record struct BiquadCoefficients(double B0, double B1, double B2, double A1, double A2)
 {
     public static BiquadCoefficients Identity => new(1, 0, 0, 0, 0);
 
@@ -96,7 +96,7 @@ internal readonly record struct BiquadCoefficients(double B0, double B1, double 
 }
 
 /// <summary>Estimates how loud a set of bands is, so the engine can add headroom and level-match A/B.</summary>
-internal static class EqAnalysis
+public static class EqAnalysis
 {
     public static (double PeakDb, double MeanDb) Analyze(IReadOnlyList<AudioEqBand> bands, int sampleRate)
     {
@@ -130,7 +130,7 @@ internal static class EqAnalysis
 }
 
 /// <summary>Turns a block of recent output samples into log-spaced dBFS levels for the live spectrum.</summary>
-internal static class SpectrumAnalyzer
+public static class SpectrumAnalyzer
 {
     public const int WindowSize = 2048;
 
