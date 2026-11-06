@@ -20,9 +20,11 @@ Windows may show a "Windows protected your PC" warning because the installer is 
 
 ## Screenshots
 
-**Basic mode:** four tone controls (Bass, Warmth, Presence, Treble) with sound controls on the side.
+![EqualTune in action: a live spectrum behind the EQ curve](screenshots/00-live-demo.gif)
 
-![Basic mode with sound controls](screenshots/01-basic-eq.png)
+**Basic mode:** four tone controls (Bass, Warmth, Presence, Treble) with a live spectrum behind the curve.
+
+![Basic mode](screenshots/01-basic-eq.png)
 
 **Advanced mode:** up to 12 parametric bands, each with its own frequency, gain, width (Q) and filter shape.
 
@@ -30,10 +32,8 @@ Windows may show a "Windows protected your PC" warning because the installer is 
 
 | | |
 | --- | --- |
-| ![Band controls](screenshots/03-band-controls.png)<br>Every band can be named, dragged, reordered and given its own filter shape. | ![Live spectrum](screenshots/04-live-spectrum.png)<br>A live spectrum shows your audio behind the EQ curve. |
-| ![Presets](screenshots/05-presets.png)<br>14 built-in presets, plus your own. | ![Skins](screenshots/06-skins.png)<br>16 visual styles to choose from. |
-
-![Appearance options](screenshots/07-appearance.png)
+| ![Band controls](screenshots/03-band-controls.png)<br>Every band can be named, dragged, reordered and given its own filter shape. | ![Presets](screenshots/04-presets.png)<br>14 built-in presets, plus your own. |
+| ![Skins](screenshots/05-skins.png)<br>16 visual styles to choose from. | ![Appearance options](screenshots/06-appearance.png)<br>Background image, fonts, colors and text sizes. |
 
 
 ## What it does
