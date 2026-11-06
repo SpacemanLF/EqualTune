@@ -2,6 +2,9 @@
 #ifndef MyAppVersion
   #define MyAppVersion "1.0.0"
 #endif
+#ifndef MyAppVersionInfo
+  #define MyAppVersionInfo MyAppVersion
+#endif
 #define MyAppName "EqualTune"
 #define MyAppExe "EqualTune.AudioLab.exe"
 
@@ -14,7 +17,7 @@ AppPublisher=EqualTune
 AppPublisherURL=https://github.com/SpacemanLF/EqualTune
 AppSupportURL=https://github.com/SpacemanLF/EqualTune/issues
 AppUpdatesURL=https://github.com/SpacemanLF/EqualTune/releases
-VersionInfoVersion={#MyAppVersion}
+VersionInfoVersion={#MyAppVersionInfo}
 DefaultDirName={autopf}\EqualTune
 DefaultGroupName=EqualTune
 ; The install folder page is always shown so the app can go on any drive.

@@ -9,13 +9,16 @@ internal static class AppInfo
 {
     public const string DonateUrl = "https://buymeacoffee.com/equaltune";   // EqualTune support link (leave empty until set; the button then says it is not set up yet)
     public const string VbAudioUrl = "https://vb-audio.com/Cable/";
+    public const string CommunityUrl = "https://www.reddit.com/r/EqualTune/";
 
     public static string Version
     {
         get
         {
             var v = Assembly.GetExecutingAssembly().GetName().Version;
-            return v is null ? "1.0.0" : $"{v.Major}.{v.Minor}.{v.Build}";
+            if (v is null) return "1.0";
+            // Two-number versions (1.5) are shown without a trailing ".0"; a third number only appears if it is not zero.
+            return v.Build > 0 ? $"{v.Major}.{v.Minor}.{v.Build}" : $"{v.Major}.{v.Minor}";
         }
     }
 

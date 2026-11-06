@@ -11,6 +11,10 @@ if ($csproj -notmatch '<Version>([^<]+)</Version>') { throw 'Could not find <Ver
 $version = $Matches[1]
 $extra = @()
 if ($OverrideVersion) { $version = $OverrideVersion; $extra = @("-p:Version=$OverrideVersion", "-p:AssemblyVersion=$OverrideVersion.0", "-p:FileVersion=$OverrideVersion.0", "-p:InformationalVersion=$OverrideVersion") }
+# Windows file versions need four numbers: 1.5 -> 1.5.0.0
+$parts = @($version.Split('.')); while ($parts.Count -lt 4) { $parts += '0' }
+$infoVersion = ($parts | Select-Object -First 4) -join '.'
+if ($OverrideVersion) { $extra = @("-p:Version=$OverrideVersion", "-p:AssemblyVersion=$infoVersion", "-p:FileVersion=$infoVersion", "-p:InformationalVersion=$OverrideVersion") }
 Write-Host "Building EqualTune $version" -ForegroundColor Cyan
 
 if (Test-Path .\publish) { Remove-Item .\publish -Recurse -Force }
@@ -33,7 +37,7 @@ if (-not $iscc) {
 }
 if (-not $iscc) { throw 'Inno Setup (ISCC.exe) was not found. Install it from https://jrsoftware.org/isdl.php, or run this script with the path:  $env:ISCC_PATH = "C:\path\to\ISCC.exe"' }
 
-& $iscc "/DMyAppVersion=$version" .\installer\EqualTune.iss
+& $iscc "/DMyAppVersion=$version" "/DMyAppVersionInfo=$infoVersion" .\installer\EqualTune.iss
 if ($LASTEXITCODE -ne 0) { throw 'Inno Setup failed.' }
 
 Write-Host "`nDone: installer\Output\EqualTune-Setup-$version.exe" -ForegroundColor Green
