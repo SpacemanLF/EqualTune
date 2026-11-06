@@ -17,14 +17,13 @@ internal static class LinuxHotkeys
     private const string Schema = "org.gnome.settings-daemon.plugins.media-keys";
     private const string BasePath = "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/";
 
-    // Ctrl+Shift+Alt+letter does not collide with Ubuntu's shortcuts, and virtual machines and Windows do not grab it
-    // (the Windows key and Ctrl+Alt+arrows are taken).
+    // Ctrl+Alt+E / B, and comma / period for previous / next preset (Ubuntu uses Ctrl+Alt+arrows for workspaces).
     private static readonly (string Id, string Label, string Command, string Binding)[] Items =
     [
-        ("equaltune-eq", "EqualTune: EQ on/off", "toggleEq", "<Primary><Shift><Alt>e"),
-        ("equaltune-ab", "EqualTune: A/B compare", "ab", "<Primary><Shift><Alt>b"),
-        ("equaltune-next", "EqualTune: next preset", "nextPreset", "<Primary><Shift><Alt>n"),
-        ("equaltune-prev", "EqualTune: previous preset", "prevPreset", "<Primary><Shift><Alt>p"),
+        ("equaltune-eq", "EqualTune: EQ on/off", "toggleEq", "<Primary><Alt>e"),
+        ("equaltune-ab", "EqualTune: A/B compare", "ab", "<Primary><Alt>b"),
+        ("equaltune-next", "EqualTune: next preset", "nextPreset", "<Primary><Alt>period"),
+        ("equaltune-prev", "EqualTune: previous preset", "prevPreset", "<Primary><Alt>comma"),
     ];
 
     private static string SocketPath
