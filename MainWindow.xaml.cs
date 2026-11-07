@@ -332,6 +332,7 @@ public partial class MainWindow : Window
                         else { _pendingNotice = "The EqualTune support link has not been set up yet."; FlushNotice(); }
                     }
                     else if (which == "vbaudio") AppInfo.OpenUrl(AppInfo.VbAudioUrl);
+                    else if (which == "community") AppInfo.OpenUrl(AppInfo.CommunityUrl);
                     else if (which == "logs") AppInfo.OpenFolder(AppLog.Folder);
                     break;
                 case "refresh": LoadDevices(); PushPrototypeDevices(); break;

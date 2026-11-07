@@ -46,7 +46,9 @@ internal static class UpdateChecker
         var notes = root.TryGetProperty("body", out var body) ? body.GetString() ?? "" : "";
         if (notes.Length > 700) notes = notes[..700] + "…";
         var page = root.TryGetProperty("html_url", out var html) ? html.GetString() ?? "" : $"https://github.com/{Repo}/releases";
-        return new UpdateInfo(latest.ToString(3), notes, page, download);
+        // "1.5.0" is shown as "1.5".
+        var shown = latest.Build > 0 ? latest.ToString(3) : latest.ToString(2);
+        return new UpdateInfo(shown, notes, page, download);
     }
 
     public static bool TryParseVersion(string text, out Version version)
@@ -56,7 +58,8 @@ internal static class UpdateChecker
         var dash = text.IndexOf('-');
         if (dash > 0) text = text[..dash];
         if (!Version.TryParse(text, out var parsed)) return false;
-        version = parsed;
+        // Always three numbers, so "1.5" and "1.5.0" are the same version and compare correctly.
+        version = new Version(parsed.Major, parsed.Minor, Math.Max(parsed.Build, 0));
         return true;
     }
 

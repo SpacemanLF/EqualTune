@@ -20,9 +20,11 @@ Windows may show a "Windows protected your PC" warning because the installer is 
 
 ## Screenshots
 
-**Basic mode:** four tone controls (Bass, Warmth, Presence, Treble) with sound controls on the side.
+![EqualTune in action: a live spectrum behind the EQ curve](screenshots/00-live-demo.gif)
 
-![Basic mode with sound controls](screenshots/01-basic-eq.png)
+**Basic mode:** four tone controls (Bass, Warmth, Presence, Treble) with a live spectrum behind the curve.
+
+![Basic mode](screenshots/01-basic-eq.png)
 
 **Advanced mode:** up to 12 parametric bands, each with its own frequency, gain, width (Q) and filter shape.
 
@@ -30,10 +32,9 @@ Windows may show a "Windows protected your PC" warning because the installer is 
 
 | | |
 | --- | --- |
-| ![Band controls](screenshots/03-band-controls.png)<br>Every band can be named, dragged, reordered and given its own filter shape. | ![Live spectrum](screenshots/04-live-spectrum.png)<br>A live spectrum shows your audio behind the EQ curve. |
-| ![Presets](screenshots/05-presets.png)<br>14 built-in presets, plus your own. | ![Skins](screenshots/06-skins.png)<br>16 visual styles to choose from. |
+| ![Band controls](screenshots/03-band-controls.png)<br>Every band can be named, dragged, reordered and given its own filter shape. | ![Presets](screenshots/04-presets.png)<br>14 built-in presets, plus your own. |
+| ![Skins](screenshots/05-skins.png)<br>16 visual styles to choose from. | ![Appearance options](screenshots/06-appearance.png)<br>Background image, fonts, colors and text sizes. |
 
-![Appearance options](screenshots/07-appearance.png)
 
 ## What it does
 
@@ -122,8 +123,18 @@ dotnet run --project .\EqualTune.AudioLab.csproj
 The audio engine uses Windows' built-in Core Audio COM and WASAPI APIs directly. The only package dependency is Microsoft's WebView2 SDK.
 
 The app icon is `Assets/EqualTune.ico` (source: `Assets/EqualTune-icon-1024.png`). The same icon is used for the window, the EXE and the installer.
-
 ## Notes
 
 - The routed sound uses the shared-mode mix format; 32-bit float and 16-bit PCM are supported.
 - Playback loopback (capturing a normal output instead of the virtual cable) is a diagnostic preview: the original sound keeps playing alongside the processed copy.
+
+>
+  <img
+    src="https://peerpush.com/p/equaltune-lhfj/badge.png"
+    alt="EqualTune on PeerPush"
+    width="230"
+    height="65"
+    loading="lazy"
+    style="width: 230px; height: auto;"
+  />
+</a>
