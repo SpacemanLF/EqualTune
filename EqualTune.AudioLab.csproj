@@ -26,6 +26,11 @@
     <Compile Remove="publish\**" />
     <Compile Remove="installer\**" />
     <Page Remove="backup-*\**" />
+    <ProjectReference Include="core\EqualTune.Core.csproj" />
+    <Compile Remove="core\**;shell\**" />
+    <Page Remove="core\**;shell\**" />
+    <None Remove="core\**;shell\**" />
+    <EmbeddedResource Remove="core\**;shell\**" />
     <None Remove="backup-*\**" />
     <None Remove="publish\**" />
     <None Remove="installer\**" />
