@@ -14,7 +14,7 @@ EqualTune is a free, system-wide audio equalizer for Windows. A WPF window hosts
 2. Download `EqualTune-Setup-x.y.z.exe` under **Assets** and run it.
 3. Follow the setup. It can install VB-CABLE for you if you don't have it yet.
 
-EqualTune is for Windows 10 and 11 (64-bit) for now. **A Linux version is planned.**
+EqualTune is for Windows 10 and 11 (64-bit) for now.   **A Linux version is in development** (see [Roadmap](#roadmap)).
 
 Windows may show a "Windows protected your PC" warning because the installer is not code-signed yet: click **More info → Run anyway**.
 
@@ -79,7 +79,7 @@ All of this stays on your computer, in your own settings.
 
 ## Roadmap
 
-- **Linux version:** planned for a future release. It isn't started yet, and there's no date.
+- **Linux version:** in development. A working port (Ubuntu with GNOME, using PulseAudio/PipeWire) is in this repository under `shell/` and `core/`, and uses the same interface as Windows. There's no installer or package yet; one is planned. Notes are in [LINUX-PORT.md](LINUX-PORT.md).
 
 ## Community
 
