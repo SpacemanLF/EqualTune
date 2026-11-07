@@ -11,10 +11,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Photino.NET" Version="3.*" />
+    <PackageReference Include="Photino.NET" Version="4.*" />
     <ProjectReference Include="..\core\EqualTune.Core.csproj" />
     <!-- The same interface file the Windows app uses. -->
     <Content Include="..\Assets\EqualizerPrototype.html" Link="Assets\EqualizerPrototype.html" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- Use our own build of Photino's native library (works on Ubuntu 22.04 and newer, WebKitGTK 4.1).
+       The one inside the NuGet package needs glibc 2.38. Rebuild with native/build-photino-native.sh. -->
+  <Target Name="UseOwnPhotinoNative" AfterTargets="Build" Condition="Exists('$(MSBuildProjectDirectory)/native/linux-x64/Photino.Native.so')">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/native/linux-x64/Photino.Native.so"
+          DestinationFolder="$(OutDir)runtimes/linux-x64/native" />
+  </Target>
 
 </Project>
