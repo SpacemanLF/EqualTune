@@ -9,10 +9,10 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>Assets\EqualTune.ico</ApplicationIcon>
     <Product>EqualTune</Product>
-    <Version>1.5</Version>
-    <AssemblyVersion>1.5.0.0</AssemblyVersion>
-    <FileVersion>1.5.0.0</FileVersion>
-    <InformationalVersion>1.5</InformationalVersion>
+    <Version>1.6</Version>
+    <AssemblyVersion>1.6.0.0</AssemblyVersion>
+    <FileVersion>1.6.0.0</FileVersion>
+    <InformationalVersion>1.6</InformationalVersion>
     <AssemblyTitle>EqualTune</AssemblyTitle>
     <Description>System-wide audio equalizer for Windows</Description>
   </PropertyGroup>
