@@ -26,7 +26,8 @@ internal static class LinuxBackend
     private static string _outputId = "";
     private static string _routeMode = "system", _routeSource = "";
     private static bool _spectrumEnabled = true, _spectrumSent, _statusSent;
-    private static bool _eqEnabled = true, _autoPreamp = true, _bypass, _matchLevel = true;
+    private static bool _eqEnabled = true, _autoPreamp = false, _bypass, _matchLevel = true;
+    private static double _manualPreampDb;
     private static double _attenuation, _loudness, _balance;
     private static bool _limiter = true;
     private static long _lastClips = -1;
@@ -89,7 +90,8 @@ internal static class LinuxBackend
                     if (root.TryGetProperty("autoPreamp", out var ap)) _autoPreamp = ap.GetBoolean();
                     if (root.TryGetProperty("bypass", out var bp)) _bypass = bp.GetBoolean();
                     if (root.TryGetProperty("matchLevel", out var ml)) _matchLevel = ml.GetBoolean();
-                    Processor.SetEngineOptions(_autoPreamp, _bypass, _matchLevel);
+                    if (root.TryGetProperty("preampDb", out var manualDb) && manualDb.ValueKind == JsonValueKind.Number) _manualPreampDb = Math.Clamp(manualDb.GetDouble(), -24, 24);
+                    Processor.SetEngineOptions(_autoPreamp, _bypass, _matchLevel, _manualPreampDb);
                     break;
                 case "sound":
                     if (root.TryGetProperty("attenuation", out var att)) _attenuation = att.GetDouble();
@@ -300,7 +302,7 @@ internal static class LinuxBackend
     private static void ApplyProcessorSettings()
     {
         Processor.SetBands(_eqEnabled ? _bandsFromUi : []);
-        Processor.SetEngineOptions(_autoPreamp, _bypass, _matchLevel);
+        Processor.SetEngineOptions(_autoPreamp, _bypass, _matchLevel, _manualPreampDb);
         Processor.SetSoundControls(_attenuation, _loudness, _limiter, _balance);
     }
 

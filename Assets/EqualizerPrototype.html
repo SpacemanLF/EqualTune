@@ -157,6 +157,11 @@
     body.advanced .advanced-note { display:block; }
     .toast { position:fixed; z-index:30; bottom:22px; right:24px; background:#252b37; border:1px solid #41495b; padding:11px 15px; border-radius:10px; box-shadow:0 12px 40px #0007; font-size:11px; opacity:0; transform:translateY(8px); transition:all .2s; pointer-events:none; }
     .toast.show { opacity:1; transform:translateY(0); }
+    .import-note { position:fixed; z-index:40; left:50%; bottom:16px; transform:translateX(-50%); width:min(760px,calc(100vw - 28px)); box-sizing:border-box; display:flex; align-items:flex-start; gap:12px; padding:12px 14px 12px 16px; border-radius:12px; background:var(--surface-3,#252b37); color:var(--text,#e8ecf4); border:1px solid var(--accent,#5b8cff); box-shadow:0 14px 44px #000a; font-size:13px; line-height:1.45; }
+    .import-note[hidden] { display:none; }
+    .import-note-text { flex:1 1 auto; min-width:0; overflow-wrap:anywhere; }
+    .import-note button { flex:0 0 auto; border:0; background:transparent; color:inherit; font-size:20px; line-height:1; cursor:pointer; padding:0 4px; opacity:.8; }
+    .import-note button:hover { opacity:1; }
     .lower-grid { display:none; }
     .modal-backdrop { position:fixed; inset:0; z-index:20; display:none; place-items:center; padding:20px; background:#080a0ecc; }
     .modal-backdrop.open { display:grid; }
@@ -1461,6 +1466,23 @@
     .engine-toggle { display:inline-flex; align-items:center; gap:6px; cursor:pointer; color:var(--text); }
     .engine-toggle input { accent-color:var(--blue); }
     .engine-readout { font-variant-numeric:tabular-nums; }
+    #equalizerPage .tabs-row { justify-content:flex-start; flex-wrap:wrap; gap:10px 14px; }
+    #equalizerPage .tabs-row .tabs { flex:0 0 auto; }
+    #equalizerPage .tabs-row .tabs button { white-space:nowrap; }
+    #equalizerPage .tabs-row .preset-select { flex:1 1 auto; min-width:0; flex-wrap:wrap; gap:8px; }
+    #equalizerPage .tabs-row .preset-select > * { flex:0 0 auto; }
+    @media (max-width:1180px) { #equalizerPage .tabs-row .preset-select { gap:6px; } #equalizerPage .tabs-row .preset-select .small-btn { padding-left:9px; padding-right:9px; } #equalizerPage .tabs-row .preset-select select { min-width:140px; } body.theme-immersive #equalizerPage .tabs-row { padding:9px 12px; } }
+    .preamp-ctl { display:inline-flex; align-items:center; gap:8px; color:var(--text); }
+    .preamp-ctl input[type=range] { width:150px; accent-color:var(--blue); }
+    .preamp-warn { flex:0 0 auto; padding:2px 10px; border-radius:999px; font-size:12px; line-height:1.5; border:1px solid; white-space:nowrap; }
+    .preamp-warn.caution { color:#ffd479; background:rgba(255,196,77,.10); border-color:rgba(255,196,77,.45); }
+    .preamp-warn.danger { color:#ff9c9c; background:rgba(255,92,92,.12); border-color:rgba(255,92,92,.55); font-weight:600; }
+    .preamp-ctl input[type=number] { width:54px; padding:3px 2px; border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--text); font:inherit; font-variant-numeric:tabular-nums; text-align:center; -moz-appearance:textfield; appearance:textfield; }
+    .preamp-ctl input[type=number]::-webkit-outer-spin-button,.preamp-ctl input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+    .preamp-reset { padding:3px 9px; font-size:11px; }
+    .preamp-fade { flex:0 0 auto; padding:2px 10px; border-radius:999px; font-size:12px; line-height:1.5; border:1px solid rgba(110,170,255,.5); color:#9cc7ff; background:rgba(110,170,255,.10); white-space:nowrap; }
+    .preamp-unit { color:var(--muted); margin-left:-4px; }
+    .preamp-ctl output { min-width:58px; font-variant-numeric:tabular-nums; color:var(--muted); text-align:right; }
     .engine-clip { padding:2px 8px; border-radius:999px; background:#ff6b5b; color:#fff; font-weight:700; }
     .engine-spacer { flex:1; }
     .engine-ab { padding:6px 12px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); font-weight:700; cursor:pointer; }
@@ -1697,6 +1719,101 @@ body.theme-immersive:not(.hide-route-card):not(.zz1):not(.zz2) .route-card .mini
 body.theme-hud .side-bottom .support-link:not([hidden]) { display:block!important; color:#f5e500; font-size:12px!important; }
 /* Pill-shaped top bars (Aurora, Frosted Glass): start from the left and grow with their content, so a narrow window scrolls instead of cutting off the left edge. */
 body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-width:max-content}
+    /* ---- Fits any window width: no sideways scrolling ---- */
+    html, body { max-width:100%; overflow-x:hidden; }
+    body { min-width:0 !important; }
+    img, canvas, svg, video, select, input, textarea { max-width:100%; }
+    main, main > section, .panel, .eq-panel, .panel-head, .topbar > *, .title, .graph-wrap { min-width:0; }
+    .engine-bar { min-width:0; }
+    .panel-head { flex-wrap:wrap; }
+    .legend { flex-wrap:wrap; justify-content:flex-start; max-width:100%; }
+    .preamp-ctl { flex-wrap:wrap; max-width:100%; }
+    .side-bottom, .route-card { min-width:0; max-width:100%; box-sizing:border-box; }
+    /* top-bar layouts: keep nav and status pills intact, wrap onto a second row instead of squeezing */
+    html body.aside-row aside { flex-wrap:wrap !important; height:auto !important; row-gap:8px !important; }
+    html body.aside-row aside .nav { flex-wrap:wrap !important; }
+    html body.aside-row aside .nav button { flex:0 0 auto !important; width:auto !important; min-width:max-content; white-space:nowrap; }
+    html body.aside-row .shell { grid-template-rows:auto minmax(0,1fr) !important; }
+    html body.aside-row[class][class][class][class][class] aside .route-card { display:none !important; }
+    html body[class] .topbar { flex-wrap:wrap !important; }
+    html body[class] .top-actions { flex-wrap:wrap !important; justify-content:flex-end; min-width:0; max-width:100%; }
+    html body[class] .top-actions select { min-width:0 !important; width:100%; max-width:100%; }
+    html body[class] .top-actions .select-wrap { flex:1 1 120px; min-width:0; max-width:340px; }
+    html body[class] .topbar > .title, html body[class] .topbar > div:first-child { flex:1 1 200px; min-width:0; }
+    html body[class] .top-actions > *:not(.select-wrap) { flex:0 0 auto !important; }
+    @media (min-width:901px) {
+      html body.aside-row aside { padding-right:180px !important; }
+      html body.aside-row aside .side-bottom { position:absolute !important; top:50%; transform:translateY(-50%); right:20px; text-align:center; margin:0 !important; padding:0 !important; width:auto !important; flex:none !important; }
+      html body.aside-row aside .side-bottom .mini-link { white-space:nowrap; text-align:center; }
+    }
+    @media (min-width:901px) {
+      html body.aside-row aside .nav { flex-wrap:nowrap !important; }
+    }
+    /* themes whose nav buttons sit directly in the bar (Vintage, Everyday): keep v1.6 spacing, anchor the group next to the logo like the other themes */
+    html body.aside-row[class] aside { justify-content:flex-start !important; column-gap:18px !important; }
+    html body.aside-row[class][class] aside .nav { gap:18px !important; column-gap:18px !important; }
+    html body.aside-row[class][class] aside > div:not(.brand):not(.side-bottom) { gap:18px !important; }
+    html body.aside-row aside .brand { flex:0 0 auto !important; }
+    html body.aside-row aside .side-bottom { flex:0 1 auto !important; flex-direction:row !important; flex-wrap:wrap !important; align-items:center; margin-left:auto; }
+    html body.aside-row aside .route-card, html body.aside-row aside .route-card * { white-space:nowrap; }
+    html body.aside-row aside .route-card { flex:0 0 auto !important; max-width:none; }
+    /* content too narrow for side-by-side panels (themes with a side column, big text, high DPI) */
+    html body.eq-narrow #equalizerPage { grid-template-columns:minmax(0,1fr) !important; }
+    html body.eq-narrow #equalizerPage > .eq-panel, html body.eq-narrow #equalizerPage > .lower-grid { grid-column:1 !important; grid-row:auto !important; }
+    html body.eq-narrow #equalizerPage .lower-grid { grid-template-columns:minmax(0,1fr) !important; }
+    html body.eq-narrow .eq-layout, html body.eq-narrow .eq-body, html body.eq-narrow .eq-main { grid-template-columns:minmax(0,1fr) !important; }
+    html body[class] .band-list { grid-template-columns:repeat(auto-fill,minmax(210px,1fr)) !important; }
+    html body[class] .band-card, html body[class] .band-card > * { min-width:0; }
+    html body[class] .band-card input, html body[class] .band-card select { max-width:100%; min-width:0; }
+    aside { max-width:100vw; box-sizing:border-box; }
+    html body.theme-aurora aside, html body.theme-glass aside { min-width:0 !important; flex-wrap:wrap !important; border-radius:18px !important; }
+    html body.theme-aurora .shell, html body.theme-glass .shell { grid-template-rows:auto minmax(0,1fr) !important; }
+    body .basic-controls { grid-template-columns:repeat(auto-fit,minmax(130px,1fr)) !important; }
+    body .preference-row, body .scale-control, body .settings-section label { flex-wrap:wrap; min-width:0; }
+    body .preference-row > *, body .scale-control > * { min-width:0; }
+    body #interfaceScale { max-width:100%; }
+    @media (max-width:900px) {
+      html body[class] .shell { grid-template-columns:minmax(0,1fr) !important; display:grid !important; }
+      html body[class] aside { display:flex !important; position:static !important; width:auto !important; height:auto !important; min-height:0 !important; max-height:none !important; flex-direction:row !important; flex-wrap:wrap !important; align-items:center !important; gap:8px 14px !important; padding:10px 14px !important; border-right:0 !important; border-bottom:1px solid var(--line) !important; overflow:visible !important; }
+      html body[class] aside .nav-label { display:none !important; }
+      html body[class] aside .nav { display:flex !important; flex-wrap:wrap; gap:6px !important; }
+      html body[class] aside .nav button { padding:8px 11px !important; }
+      html body[class] aside .side-bottom { flex:1 1 100%; margin-top:0 !important; display:flex !important; flex-wrap:wrap; gap:8px !important; }
+      html body[class] aside .side-bottom > * { flex:1 1 220px; min-width:0; }
+      html body[class] main { padding:16px 14px 20px !important; }
+      html body[class] .topbar { flex-wrap:wrap !important; gap:12px !important; }
+      html body[class] .top-actions { flex-wrap:wrap !important; gap:8px !important; }
+      html body[class] .top-actions select { min-width:0 !important; width:100%; }
+      html body[class] .top-actions .select-wrap { flex:1 1 220px; min-width:0; }
+      html body[class] #equalizerPage { grid-template-columns:minmax(0,1fr) !important; }
+      html body[class] .lower-grid, body .controls-panel { grid-template-columns:minmax(0,1fr) !important; }
+      html body[class] .selected-band { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+      html body[class] .band-list { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)) !important; }
+      html body[class] .banner { flex-wrap:wrap; }
+    }
+    @media (max-width:900px) {
+      html body[class] aside > div { min-width:0; max-width:100%; }
+      html body[class] .text-size-control, body .text-size-control * , body .vintage-knob-heading { flex-wrap:wrap; min-width:0; }
+    }
+    @media (max-width:900px) {
+      html body[class] aside > div { flex:0 1 auto !important; }
+      html body[class] aside .nav button { width:auto !important; flex:0 0 auto; }
+      html body[class] aside .brand { flex:1 1 100%; }
+      html body[class] aside .route-card { min-height:0 !important; height:auto !important; }
+      html body[class] aside .side-bottom { margin:0 !important; padding:0 !important; }
+      html body[class] aside .side-bottom > * { flex:0 1 auto !important; }
+      html body[class][class][class] aside #donateSide, html body[class][class][class] aside #updateSide { min-height:0 !important; height:auto !important; margin:0 !important; padding:6px 10px !important; }
+    }
+    @media (max-width:700px) {
+      html body[class][class][class][class][class][class] aside .route-card { display:none !important; }
+      html body[class] aside .side-bottom { flex:0 1 auto !important; }
+    }
+    @media (max-width:560px) {
+      html body[class] .selected-band { grid-template-columns:minmax(0,1fr) !important; }
+      html body[class] .engine-bar { gap:8px 10px; }
+      html body[class] .preamp-ctl input[type=range] { width:110px; }
+      html body[class] .tabs-row { gap:8px !important; }
+    }
 </style>
 <script id="equaltune-lite-fx-js">
 (function(){
@@ -1773,14 +1890,18 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
     <section id="equalizerPage">
     <div class="tabs-row">
       <div class="tabs" role="tablist"><button class="active" id="basic">Basic</button><button id="advanced">Advanced</button></div>
-      <div class="preset-select"><span>Active preset</span><div class="select-wrap"><select id="preset"><option>Balanced clarity</option><option>Warm headphones</option><option>Voice focus</option><option>Bass impact</option><option>Bright &amp; open</option><option>Soft evening</option><option>Late night · low volume</option><option>Reduce harshness</option><option>Gaming · footsteps</option><option>Movie · dialogue</option><option>Club · hip-hop / EDM</option><option>Acoustic · natural</option><option>Harman-style (approx.)</option><option>Flat · reference</option><option>Custom</option></select></div><button class="small-btn" id="undoEq" type="button" disabled title="Undo the last EQ change">Undo</button><button class="small-btn" id="reset" type="button" title="Reset the equalizer to a flat response">Reset to flat</button><button class="small-btn" id="savePreset">Save</button><button class="small-btn danger" id="deletePreset" type="button" hidden title="Delete this saved preset">Delete</button><button class="small-btn" id="exportEqPreset" type="button">Export</button><button class="small-btn" id="exportEqText" type="button" title="Export as Equalizer APO / AutoEq text, readable by many EQ apps">Export .txt</button><button class="small-btn" id="importEqPresetButton" type="button">Import</button><input id="importEqPresetFile" class="hidden-file-input" type="file" accept="application/json,.json,text/plain,.txt"></div>
+      <div class="preset-select"><span>Active preset</span><div class="select-wrap"><select id="preset"><option>Balanced clarity</option><option>Warm headphones</option><option>Voice focus</option><option>Bass impact</option><option>Bright &amp; open</option><option>Soft evening</option><option>Late night · low volume</option><option>Reduce harshness</option><option>Gaming · footsteps</option><option>Movie · dialogue</option><option>Club · hip-hop / EDM</option><option>Acoustic · natural</option><option>Harman-style (approx.)</option><option>Flat · reference</option><option>Custom</option></select></div><button class="small-btn" id="undoEq" type="button" disabled title="Undo the last EQ change">Undo</button><button class="small-btn" id="reset" type="button" title="Reset the equalizer to a flat response">Reset to flat</button><button class="small-btn" id="savePreset">Save</button><button class="small-btn danger" id="deletePreset" type="button" hidden title="Delete this saved preset">Delete</button><button class="small-btn" id="exportEqPreset" type="button">Export</button><button class="small-btn" id="exportEqText" type="button" title="Export as Equalizer APO / AutoEq text, readable by many EQ apps">Export .txt</button><button class="small-btn" id="importEqPresetButton" type="button" title="Import an EqualTune preset, Equalizer APO / AutoEq / Room EQ Wizard filters, a GraphicEQ file, or a frequency and gain table (CSV or text)">Import</button><input id="importEqPresetFile" class="hidden-file-input" type="file" accept="application/json,.json,text/plain,.txt,.csv,.tsv,.cfg,.conf,text/csv"></div>
     </div>
     <section class="panel eq-panel">
       <div class="panel-head"><div><h2 id="eqTitle">4-point tone EQ</h2><div class="sub" id="eqHint">Points show individual band gain; blue curve shows combined response · graph: ±24 dB</div></div><div class="legend"><span><i></i>EQ response</span><button class="range-toggle" id="extendedRange" type="button" aria-pressed="false" title="Allow each band to use up to ±24 dB. Large boosts can cause clipping.">Extended range: Off</button><button class="visual-toggle" id="visualToggle" type="button" aria-pressed="true">Band visuals: On</button><button class="range-toggle" id="audioVizToggle" type="button" aria-pressed="true" title="Show the live audio visual behind the EQ curve while sound is routed">Audio visual: On</button></div></div>
       <div class="advanced-note"><strong>EQ tips</strong><span>Click the graph to add a band. Drag a point to change frequency and gain. Adjust Width (Q) to control how many nearby frequencies it affects, or use Add band to start with precise values.</span></div>
       <div class="engine-bar" id="engineBar" role="group" aria-label="Audio engine options">
-        <label class="engine-toggle" title="Lower the volume by the EQ's biggest boost so boosted presets do not distort"><input type="checkbox" id="autoPreamp" checked><span>Auto-preamp</span></label>
-        <span class="engine-readout" id="preampReadout">Headroom 0.0 dB</span>
+        <label class="engine-toggle" title="Lower the volume by the EQ's biggest boost so boosted presets do not distort"><input type="checkbox" id="autoPreamp"><span>Auto-preamp</span></label>
+        <span class="engine-readout" id="preampReadout">Automatic</span>
+        <span class="preamp-ctl" title="Lower or raise the overall volume. Dragging it switches Auto-preamp off. Turn Auto-preamp back on to let EqualTune set it from the EQ."><label for="preampSlider">Preamp</label><input type="range" id="preampSlider" min="-24" max="24" step="0.1" value="0" aria-label="Preamp in decibels"><input type="number" id="preampNumber" min="-24" max="24" step="0.1" value="0" aria-label="Preamp in decibels, type a value"><span class="preamp-unit">dB</span><button type="button" class="small-btn preamp-reset" id="preampReset" title="Set the preamp back to 0 dB">Reset</button></span>
+        <span class="preamp-warn" id="preampWarn" role="alert" hidden></span>
+        <span class="preamp-fade" id="preampFade" role="status" hidden>Raising volume gradually…</span>
+        <button type="button" class="range-toggle" id="refToggle" aria-pressed="true" hidden title="Show or hide the original curve from the file you imported (dashed line)">Imported curve: Shown</button>
         <span class="engine-clip" id="clipIndicator" hidden>Clipping detected</span>
         <span class="engine-spacer"></span>
         <label class="engine-toggle" title="When comparing, make the original sound as loud as the EQ sound"><input type="checkbox" id="matchLevel" checked><span>Match loudness</span></label>
@@ -1816,7 +1937,7 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
     </section>
     <section class="settings-page presets-page" id="presetsPage" hidden>
       <div class="panel presets-panel">
-        <div class="panel-head"><div><h2>My presets</h2><div class="sub" id="myPresetsSub"></div></div><div class="legend"><button class="small-btn" id="presetsSaveCurrent" type="button">Save current EQ…</button><button class="small-btn" id="presetsImport" type="button">Import…</button></div></div>
+        <div class="panel-head"><div><h2>My presets</h2><div class="sub" id="myPresetsSub"></div></div><div class="legend"><button class="small-btn" id="presetsSaveCurrent" type="button">Save current EQ…</button><button class="small-btn" id="presetsImport" type="button" title="Import an EqualTune preset, Equalizer APO / AutoEq / Room EQ Wizard filters, a GraphicEQ file, or a frequency and gain table (CSV or text)">Import…</button></div></div>
         <div class="preset-list" id="myPresetList"></div>
       </div>
       <div class="panel presets-panel" id="appRulesPanel">
@@ -1992,6 +2113,7 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   </div>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<div class="import-note" id="importNote" role="status" hidden><span class="import-note-text" id="importNoteText"></span><button type="button" id="importNoteClose" aria-label="Close message" title="Close">×</button></div>
 <script id="equaltune-platform-apply">
   (function(){document.querySelectorAll('[data-os]').forEach(function(el){if(el.getAttribute('data-os')!==EQ_OS)el.remove();});
   var o=document.querySelector('#fontChoice option[value="segoe"]');if(o)o.textContent=OSW?'Segoe UI · Windows native':'System default · native';})();
@@ -2246,9 +2368,11 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   }
   const isBellBand=i=>(filters[i]||'Bell / peak')==='Bell / peak';
   // Where a band's circle sits: the band's own response at its center frequency (equals its gain for a bell).
-  function markerGain(i){return isBellBand(i)?gains[i]:clamp(typedDb(i,qs[i],gains[i],freqs[i]),-24,24);}
+  const isShelfBand=i=>{const t=filters[i]||'Bell / peak';return t==='Low shelf'||t==='High shelf';};
+  const isGainBand=i=>isBellBand(i)||isShelfBand(i);
+  function markerGain(i){return isGainBand(i)?gains[i]:clamp(typedDb(i,qs[i],gains[i],freqs[i]),-24,24);}
   // Dragging a marker up/down: shelves reach double the marker height; pass filters and notches have no gain.
-  function gainFromMarker(i,db){const type=filters[i]||'Bell / peak';if(type==='Low shelf'||type==='High shelf')return clamp(db*2,-gainLimit(),gainLimit());if(!isBellBand(i))return 0;return clamp(db,-gainLimit(),gainLimit());}
+  function gainFromMarker(i,db){const type=filters[i]||'Bell / peak';if(!isGainBand(i))return 0;return clamp(db,-gainLimit(),gainLimit());}
   // effGains[i] = the filter gain actually applied (graph AND audio). It is solved so the
   // combined curve passes exactly through every band's point (freqs[i], gains[i]).
   const effGains=Array(12).fill(0);
@@ -2273,7 +2397,7 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   function solveEffectiveGains(){
     const ids=visibleBandIds(),n=ids.length;
     ids.forEach(i=>{effGains[i]=gains[i];effQs[i]=qs[i];});
-    const bellIds=ids.filter(isBellBand);
+    const bellIds=ids.filter(isGainBand);
     if(bellIds.length<1||n<2)return;
     const byFreq=ids.slice().sort((a,b)=>freqs[a]-freqs[b]);
     byFreq.forEach((i,k)=>{
@@ -2283,7 +2407,7 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
       effQs[i]=clamp(Math.max(qs[i],crowdFactor/gap),.1,20);
     });
     // Levenberg-Marquardt: find filter gains so the summed response equals each point's gain at its own frequency.
-    const J=bellIds.map(j=>bellIds.map(k=>bellDb(freqs[k],effQs[k],1,freqs[j]))); // response of bell k at bell j's frequency, per dB
+    const J=bellIds.map(j=>bellIds.map(k=>typedDbFor(filters[k]||'Bell / peak',freqs[k],effQs[k],1,freqs[j]))); // response of bell k at bell j's frequency, per dB
     const resid=()=>bellIds.map(j=>gains[j]-ids.reduce((sum,k)=>sum+typedDb(k,effQs[k],effGains[k],freqs[j]),0));
     const norm=v=>Math.sqrt(v.reduce((s,x)=>s+x*x,0));
     let r=resid(),cur=norm(r),lambda=.001;
@@ -2353,7 +2477,7 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
       sampleXs.push(plot.gw,centerX);sampleXs.sort((a,b)=>a-b);
       const uniqueXs=sampleXs.filter((px,index)=>index===0||Math.abs(px-sampleXs[index-1])>.01);
       const frequencyAt=px=>20*Math.pow(10,(px/plot.gw)*3);
-      const shapeAt=px=>Math.abs(px-centerX)<.01?markerGain(i):clamp(bandShape(i,frequencyAt(px)),-responseLimit,responseLimit);
+      const shapeAt=px=>isShelfBand(i)?clamp(bandResponse(i,frequencyAt(px)),-responseLimit,responseLimit):Math.abs(px-centerX)<.01?markerGain(i):clamp(bandShape(i,frequencyAt(px)),-responseLimit,responseLimit);
       ctx.beginPath();uniqueXs.forEach((px,index)=>{const x=plot.left+px,y=yFor(shapeAt(px));index===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
       ctx.lineTo(plot.left+plot.gw,yFor(0));ctx.lineTo(plot.left,yFor(0));ctx.closePath();
       ctx.fillStyle=colors[i];ctx.globalAlpha=selected?.10:style==='modular'?.045:style==='variance'?.04:style==='precision'?.025:.03;ctx.fill();
@@ -2430,6 +2554,9 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   graph.addEventListener('pointermove',e=>{if(draggingBand<0){const r=graph.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;let near=false;graphBands().forEach(i=>{if(Math.hypot(x-xFor(freqs[i]),y-yFor(markerGain(i)))<13)near=true;});graph.style.cursor=near?'grab':document.body.classList.contains('advanced')?'crosshair':'default';return;}const r=graph.getBoundingClientRect();moveBand(draggingBand,e.clientX-r.left,e.clientY-r.top);});
   graph.addEventListener('pointerup',()=>{const moved=draggingBand>=0;draggingBand=-1;if(moved){if(!customBandOrder)sortActiveBands();renderBandCards();}graph.style.cursor='crosshair';});
   const toast=document.getElementById('toast'); let toastTimer;
+  function showImportNote(msg){const n=document.getElementById('importNote');document.getElementById('importNoteText').textContent=msg;n.hidden=false;}
+  function hideImportNote(){const n=document.getElementById('importNote');if(n)n.hidden=true;}
+  document.addEventListener('click',e=>{if(e.target&&e.target.id==='importNoteClose')hideImportNote();});
   function notify(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);}
   const themeDefaults={
     equaltune:{layout:'studio',accent:'#68aaff',background:'#101116',panel:'#191b23',basePalette:'graphite',textMode:'auto',customTextColor:'#f4f5fa',secondaryTextMode:'auto',customSecondaryTextColor:'#a8afbf',primaryTextSize:14,secondaryTextSize:12,font:'segoe'},
@@ -2610,17 +2737,22 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   document.getElementById('refreshAudioSettings').onclick=()=>postNative({type:'refresh'});
   document.getElementById('savePreset').onclick=()=>{
     const name=prompt('Name this EQ preset');if(!name)return;
-    const saved=JSON.parse(localStorage.getItem('equalTunePresets')||'{}');saved[name]={freqs:[...freqs],gains:[...gains],qs:[...qs],filters:[...filters],bandNames:[...bandNames],customBandNames:[...customBandNames],active:[...activeBandIds],order:[...activeBandIds],customBandOrder};localStorage.setItem('equalTunePresets',JSON.stringify(saved));
+    const saved=JSON.parse(localStorage.getItem('equalTunePresets')||'{}');saved[name]={freqs:[...freqs],gains:[...gains],qs:[...qs],filters:[...filters],bandNames:[...bandNames],customBandNames:[...customBandNames],active:[...activeBandIds],order:[...activeBandIds],customBandOrder,preamp:(engine.autoPreamp?undefined:engine.preampDb)};localStorage.setItem('equalTunePresets',JSON.stringify(saved));
     let option=[...document.getElementById('preset').options].find(o=>o.value===name);if(!option){option=document.createElement('option');option.textContent=name;document.getElementById('preset').appendChild(option);}document.getElementById('preset').value=name;committedPresetValue=name;scheduleCurrentEqSave();notify(`Saved “${name}”.`);
   };
-  function currentEqPresetFile(name){return{type:'equaltune-eq-preset',schemaVersion:1,name:fileSafeName(name),bands:{frequencies:[...freqs],gains:[...gains],qs:[...qs],filters:[...filters],names:[...bandNames],customNames:[...customBandNames],active:[...activeBandIds],order:[...activeBandIds],customOrder:Boolean(customBandOrder)}};}
-  function validateEqPresetFile(doc){if(doc?.type!=='equaltune-eq-preset'||doc.schemaVersion!==1||!doc.bands)throw new Error('This is not a supported EqualTune EQ preset file.');const b=doc.bands,arrays=['frequencies','gains','qs','filters','names','customNames'];for(const key of arrays)if(!Array.isArray(b[key])||b[key].length!==12)throw new Error('The preset must contain exactly 12 band slots.');if(!b.frequencies.every(v=>Number.isFinite(v)&&v>=20&&v<=20000)||!b.gains.every(v=>Number.isFinite(v)&&v>=-24&&v<=24)||!b.qs.every(v=>Number.isFinite(v)&&v>=.2&&v<=10))throw new Error('The preset contains frequency, gain, or Q values outside the supported range.');if(!b.filters.every(v=>filterOptions.includes(v))||!b.names.every(v=>typeof v==='string'&&v.length<=48)||!b.customNames.every(v=>typeof v==='boolean'))throw new Error('The preset contains unsupported band settings.');const active=b.active;if(!Array.isArray(active)||active.length<1||active.length>12||!active.every(v=>Number.isInteger(v)&&v>=0&&v<12)||new Set(active).size!==active.length)throw new Error('The preset contains an invalid active band list.');const order=b.order||active;if(!Array.isArray(order)||order.length!==active.length||new Set(order).size!==order.length||order.some(v=>!active.includes(v)))throw new Error('The preset contains an invalid band order.');const name=String(doc.name||'Imported EQ').trim().slice(0,48)||'Imported EQ';return{name,bands:{frequencies:[...b.frequencies],gains:[...b.gains],qs:[...b.qs],filters:[...b.filters],names:[...b.names],customNames:[...b.customNames],active:[...active],order:[...order],customOrder:Boolean(b.customOrder)}};}
+  function currentEqPresetFile(name){return{type:'equaltune-eq-preset',schemaVersion:1,name:fileSafeName(name),preamp:(engine.autoPreamp?undefined:engine.preampDb),bands:{frequencies:[...freqs],gains:[...gains],qs:[...qs],filters:[...filters],names:[...bandNames],customNames:[...customBandNames],active:[...activeBandIds],order:[...activeBandIds],customOrder:Boolean(customBandOrder)}};}
+  function validateEqPresetFile(doc){if(doc?.type!=='equaltune-eq-preset'||doc.schemaVersion!==1||!doc.bands)throw new Error('This is not a supported EqualTune EQ preset file.');const b=doc.bands,arrays=['frequencies','gains','qs','filters','names','customNames'];for(const key of arrays)if(!Array.isArray(b[key])||b[key].length!==12)throw new Error('The preset must contain exactly 12 band slots.');if(!b.frequencies.every(v=>Number.isFinite(v)&&v>=20&&v<=20000)||!b.gains.every(v=>Number.isFinite(v)&&v>=-24&&v<=24)||!b.qs.every(v=>Number.isFinite(v)&&v>=.2&&v<=10))throw new Error('The preset contains frequency, gain, or Q values outside the supported range.');if(!b.filters.every(v=>filterOptions.includes(v))||!b.names.every(v=>typeof v==='string'&&v.length<=48)||!b.customNames.every(v=>typeof v==='boolean'))throw new Error('The preset contains unsupported band settings.');const active=b.active;if(!Array.isArray(active)||active.length<1||active.length>12||!active.every(v=>Number.isInteger(v)&&v>=0&&v<12)||new Set(active).size!==active.length)throw new Error('The preset contains an invalid active band list.');const order=b.order||active;if(!Array.isArray(order)||order.length!==active.length||new Set(order).size!==order.length||order.some(v=>!active.includes(v)))throw new Error('The preset contains an invalid band order.');const name=String(doc.name||'Imported EQ').trim().slice(0,48)||'Imported EQ';return{name,preamp:Number.isFinite(doc.preamp)?Math.max(-24,Math.min(24,doc.preamp)):undefined,bands:{frequencies:[...b.frequencies],gains:[...b.gains],qs:[...b.qs],filters:[...b.filters],names:[...b.names],customNames:[...b.customNames],active:[...active],order:[...order],customOrder:Boolean(b.customOrder)}};}
 
   // ---- Equalizer APO / AutoEq text import and export ----
   const apoTypes={PK:'Bell / peak',PEAKING:'Bell / peak',LS:'Low shelf',LSC:'Low shelf',LSQ:'Low shelf',HS:'High shelf',HSC:'High shelf',HSQ:'High shelf',HP:'High-pass',HPQ:'High-pass',LP:'Low-pass',LPQ:'Low-pass',NO:'Notch',NOTCH:'Notch'};
-  function parseEqText(text,fileName){
-    const lines=String(text).split(/\r?\n/),found=[];
-    for(const line of lines){
+  // Reads Equalizer APO / AutoEq / REW filter lines, GraphicEQ lines, and frequency/gain tables (CSV or text).
+  function parseEqTextRaw(text,fileName){
+    text=String(text).replace(/^\uFEFF/,'');if(/\.mdat$/i.test(String(fileName||'')))throw new Error('REW .mdat files are measurement projects. In REW, either export the filter settings for a ready-made EQ, or use File, Export, Measurement as text for a curve.');
+    const name=String(fileName||'Imported EQ').replace(/\.[^.]+$/,'').trim().slice(0,48)||'Imported EQ';
+    const lines=text.split(/\r?\n/);
+    const found=[];
+    for(const raw of lines){
+      const line=raw.replace(/(\d),(\d)/g,'$1.$2');
       const m=line.match(/^\s*Filter\s*\d*\s*:\s*(ON|OFF)\s+([A-Za-z]+)\s+(.*)$/i);
       if(!m||m[1].toUpperCase()==='OFF')continue;
       const type=apoTypes[m[2].toUpperCase()];if(!type)continue;
@@ -2629,21 +2761,108 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
       let qv=q?Number(q[1]):bw?(Math.sqrt(Math.pow(2,Number(bw[1])))/(Math.pow(2,Number(bw[1]))-1)):(type==='Bell / peak'||type==='Notch'?1:.707);
       found.push({freq:clamp(Number(fc[1]),20,20000),gain:gain?clamp(Number(gain[1]),-24,24):0,q:clamp(qv,.2,10),filter:type});
     }
-    if(!found.length)throw new Error('No EQ filters were found in that file. EqualTune reads lines like “Filter 1: ON PK Fc 100 Hz Gain 3 dB Q 1”.');
-    const used=found.slice(0,12);
-    const frequencies=[...freqs],gainsArr=Array(12).fill(0),qsArr=Array(12).fill(1),filtersArr=Array(12).fill('Bell / peak');
-    used.forEach((f,i)=>{frequencies[i]=f.freq;gainsArr[i]=f.gain;qsArr[i]=f.q;filtersArr[i]=f.filter;});
-    const active=used.map((_,i)=>i);
-    if(found.length>12)notify(`That file has ${found.length} filters; EqualTune uses the first 12.`);
-    const name=String(fileName||'Imported EQ').replace(/\.[^.]+$/,'').trim().slice(0,48)||'Imported EQ';
-    return{name,bands:{frequencies,gains:gainsArr,qs:qsArr,filters:filtersArr,names:Array(12).fill(''),customNames:Array(12).fill(false),active,order:active,customOrder:false}};
+    if(found.length){
+      const used=found.slice(0,12);
+      const frequencies=[...freqs],gainsArr=Array(12).fill(0),qsArr=Array(12).fill(1),filtersArr=Array(12).fill('Bell / peak');
+      used.forEach((f,i)=>{frequencies[i]=f.freq;gainsArr[i]=f.gain;qsArr[i]=f.q;filtersArr[i]=f.filter;});
+      const active=used.map((_,i)=>i);
+      const pm=text.replace(/(\d),(\d)/g,'$1.$2').match(/^[ \t]*Preamp\s*:\s*(-?[\d.]+)\s*dB/im);
+      const refGrid=[];for(let k=0;k<160;k++)refGrid.push(Math.exp(Math.log(20)+(Math.log(20000)-Math.log(20))*k/159));
+      const refResp=(flt,f)=>{const type=flt.filter;if(type!=='Bell / peak'&&type!=='Low shelf'&&type!=='High shelf')return 0;const A=Math.pow(10,flt.gain/40),w0=2*Math.PI*flt.freq/48000,c=Math.cos(w0),s=Math.sin(w0),al=s/(2*flt.q),sa=2*Math.sqrt(A)*al;let b0,b1,b2,a0,a1,a2;
+        if(type==='Bell / peak'){b0=1+al*A;b1=-2*c;b2=1-al*A;a0=1+al/A;a1=-2*c;a2=1-al/A;}
+        else if(type==='Low shelf'){b0=A*((A+1)-(A-1)*c+sa);b1=2*A*((A-1)-(A+1)*c);b2=A*((A+1)-(A-1)*c-sa);a0=(A+1)+(A-1)*c+sa;a1=-2*((A-1)+(A+1)*c);a2=(A+1)+(A-1)*c-sa;}
+        else{b0=A*((A+1)+(A-1)*c+sa);b1=-2*A*((A-1)+(A+1)*c);b2=A*((A+1)+(A-1)*c-sa);a0=(A+1)-(A-1)*c+sa;a1=2*((A-1)-(A+1)*c);a2=(A+1)-(A-1)*c-sa;}
+        const w=2*Math.PI*f/48000,c1=Math.cos(w),s1=Math.sin(w),c2=Math.cos(2*w),s2=Math.sin(2*w);const nr=b0+b1*c1+b2*c2,ni=-(b1*s1+b2*s2),dr=a0+a1*c1+a2*c2,di=-(a1*s1+a2*s2);return 10*Math.log10((nr*nr+ni*ni)/(dr*dr+di*di));};
+      const reference=refGrid.map(f=>[f,found.reduce((s,flt)=>s+refResp(flt,f),0)]);
+      const pnote=found.length>12?`This file has ${found.length} filters and EqualTune uses 12, so the match is not exact. The dashed line shows the file's full curve.`:`All ${found.length} filters were applied exactly. The dashed line shows the curve from the file.`;
+      return{name,reference,note:pnote,preamp:pm&&Number.isFinite(Number(pm[1]))?clamp(Number(pm[1]),-24,24):undefined,bands:{frequencies,gains:gainsArr,qs:qsArr,filters:filtersArr,names:Array(12).fill(''),customNames:Array(12).fill(false),active,order:active,customOrder:false}};
+    }
+    const graphic=text.match(/GraphicEQ\s*:\s*([^\r\n]+)/i);
+    if(graphic){
+      const pts=graphic[1].split(';').map(s=>s.trim().split(/\s+/).map(Number)).filter(p=>p.length>=2&&p.every(Number.isFinite)).map(p=>({f:p[0],g:p[1]}));
+      if(pts.length>=4)return fitCurveToBands(pts,name,false);
+    }
+    const table=readCurveTable(lines);
+    if(table.length>=6){const r=fitCurveToBands(table,name,true);if(table.measurement)r.note+=' This looks like a measurement, not an EQ, so EqualTune copied its shape. To correct a room or headphones, export the filter settings from REW instead.';return r;}
+    throw new Error('No EQ was found in that file. EqualTune reads Equalizer APO, AutoEq and Room EQ Wizard filter lines (Filter 1: ON PK Fc 100 Hz Gain 3 dB Q 1), GraphicEQ lines, and frequency and gain tables saved as CSV or text.');
+  }
+  // A table with a frequency column and a gain column. Picks the "equalization" column of AutoEq CSV results when there is one.
+  function readCurveTable(lines){
+    let col=1,measurement=lines.some(l=>/Measurement data saved by REW|SPL\s*\(dB\)/i.test(l));const rows=[];
+    for(const raw of lines){
+      const t=raw.trim();if(!t||/^[*#]/.test(t))continue;
+      const sep=t.includes(';')?';':t.includes('\t')?'\t':(/,\s/.test(t)||(t.includes(',')&&!/\s/.test(t)))?',':null;
+      const parts=(sep?t.split(sep):t.split(/\s+/)).map(s=>s.trim());
+      const nums=parts.map(s=>Number(s.replace(',','.')));
+      if(!Number.isFinite(nums[0])||parts[0]===''){
+        if(!rows.length){
+          let i=parts.findIndex(p=>/^equali[sz]ation$/i.test(p));
+          if(i<1)i=parts.findIndex((p,k)=>k>0&&/gain|^db$|spl|magnitude/i.test(p));
+          if(i>0)col=i;if(parts.some(p=>/spl/i.test(p)))measurement=true;
+        }
+        continue;
+      }
+      if(parts.length<=col)continue;
+      if(Number.isFinite(nums[col])&&nums[0]>0)rows.push({f:nums[0],g:nums[col]});
+    }
+    rows.sort((x,y)=>x.f-y.f);
+    const out=rows.filter((r,i)=>i===0||r.f>rows[i-1].f);out.measurement=measurement;return out;
+  }
+  // Turns a smooth curve into the 12 bands EqualTune has: a low shelf, ten bells and a high shelf, matched to the curve.
+  function fitCurveToBands(points,name,normalize){
+    const K=160,grid=[],lo=Math.log(20),hi=Math.log(20000);
+    for(let k=0;k<K;k++)grid.push(Math.exp(lo+(hi-lo)*k/(K-1)));
+    const at=f=>{
+      if(f<=points[0].f)return points[0].g;
+      if(f>=points[points.length-1].f)return points[points.length-1].g;
+      let j=0;while(points[j+1].f<f)j++;
+      const t=(Math.log(f)-Math.log(points[j].f))/(Math.log(points[j+1].f)-Math.log(points[j].f));
+      return points[j].g+(points[j+1].g-points[j].g)*t;
+    };
+    let target=grid.map(at);
+    if(normalize){const ref=at(1000);target=target.map(v=>v-ref);}
+    const specs=[['Low shelf',90,.707]];
+    for(let i=0;i<10;i++)specs.push(['Bell / peak',Math.round(160*Math.pow(8000/160,i/9)),1.8]);
+    specs.push(['High shelf',12000,.707]);
+    const resp=(spec,gain,f)=>{
+      const A=Math.pow(10,gain/40),w0=2*Math.PI*spec[1]/48000,c=Math.cos(w0),s=Math.sin(w0),al=s/(2*spec[2]),sa=2*Math.sqrt(A)*al;
+      let b0,b1,b2,a0,a1,a2;
+      if(spec[0]==='Bell / peak'){b0=1+al*A;b1=-2*c;b2=1-al*A;a0=1+al/A;a1=-2*c;a2=1-al/A;}
+      else if(spec[0]==='Low shelf'){b0=A*((A+1)-(A-1)*c+sa);b1=2*A*((A-1)-(A+1)*c);b2=A*((A+1)-(A-1)*c-sa);a0=(A+1)+(A-1)*c+sa;a1=-2*((A-1)+(A+1)*c);a2=(A+1)+(A-1)*c-sa;}
+      else{b0=A*((A+1)+(A-1)*c+sa);b1=-2*A*((A-1)+(A+1)*c);b2=A*((A+1)+(A-1)*c-sa);a0=(A+1)-(A-1)*c+sa;a1=2*((A-1)-(A+1)*c);a2=(A+1)-(A-1)*c-sa;}
+      const w=2*Math.PI*f/48000,c1=Math.cos(w),s1=Math.sin(w),c2=Math.cos(2*w),s2=Math.sin(2*w);
+      const nr=b0+b1*c1+b2*c2,ni=-(b1*s1+b2*s2),dr=a0+a1*c1+a2*c2,di=-(a1*s1+a2*s2);
+      return 10*Math.log10((nr*nr+ni*ni)/(dr*dr+di*di));
+    };
+    const unit=specs.map(sp=>grid.map(f=>resp(sp,3,f)/3));
+    const g=Array(12).fill(0);
+    for(let it=0;it<400;it++){
+      const tot=grid.map((f,k)=>{let s=0;for(let j=0;j<12;j++)s+=resp(specs[j],g[j],f);return s;});
+      const step=g.map((_,j)=>{let num=0,den=0;for(let k=0;k<K;k++){num+=unit[j][k]*(target[k]-tot[k]);den+=unit[j][k]*unit[j][k];}return den?num/den:0;});
+      for(let j=0;j<12;j++)g[j]=clamp(g[j]+.25*step[j],-24,24);
+    }
+    let err=0;
+    grid.forEach((f,k)=>{let s=0;for(let j=0;j<12;j++)s+=resp(specs[j],g[j],f);err+=Math.pow(target[k]-s,2);});
+    const rms=Math.sqrt(err/K);
+    const active=specs.map((_,i)=>i);
+    return{name,reference:grid.map((f,k)=>[f,target[k]]),note:`This file is a curve, so EqualTune matched it with 12 bands (within about ${rms.toFixed(1)} dB on average). That is an approximation. If the source also offers a parametric file (for example an Equalizer APO or AutoEq “ParametricEq.txt”), import that one instead for an exact match. The dashed line shows the original curve.`,
+      bands:{frequencies:specs.map(s=>s[1]),gains:g.map(v=>Math.round(v*10)/10),qs:specs.map(s=>s[2]),filters:specs.map(s=>s[0]),names:Array(12).fill(''),customNames:Array(12).fill(false),active,order:active,customOrder:false}};
+  }
+  // EqualTune points sit ON the curve, so an imported filter list is stored as the curve's value at each band's frequency.
+  // The engine then solves the real filter gains, which brings back the file's own filters.
+  function parseEqText(text,fileName){
+    const r=parseEqTextRaw(text,fileName),b=r.bands,act=b.active;
+    const total=f=>act.reduce((sum,j)=>sum+typedDbFor(b.filters[j]||'Bell / peak',b.frequencies[j],b.qs[j],b.gains[j],f),0);
+    const markers=b.gains.slice();
+    act.forEach(i=>{const t=b.filters[i]||'Bell / peak';if(t==='Bell / peak'||t==='Low shelf'||t==='High shelf')markers[i]=Math.round(clamp(total(b.frequencies[i]),-24,24)*100)/100;});
+    b.gains=markers;return r;
   }
   function currentEqText(){
     solveEffectiveGains();
     const ids=visibleBandIds().slice().sort((a,b)=>freqs[a]-freqs[b]);
     let peak=0;for(let k=0;k<120;k++){const f=20*Math.pow(1000,k/119);peak=Math.max(peak,rawTotalResponse(f));}
     const codes={'Bell / peak':'PK','Low shelf':'LSC','High shelf':'HSC','High-pass':'HPQ','Low-pass':'LPQ','Notch':'NO'};
-    const out=[`Preamp: ${(-Math.max(0,peak)).toFixed(1)} dB`];
+    const out=[`Preamp: ${(engine.autoPreamp?-Math.max(0,peak):engine.preampDb).toFixed(2)} dB`];
     ids.forEach((i,n)=>{const t=filters[i]||'Bell / peak',g=['PK','LSC','HSC'].includes(codes[t])?` Gain ${effGains[i].toFixed(2)} dB`:'';out.push(`Filter ${n+1}: ON ${codes[t]} Fc ${Math.round(freqs[i])} Hz${g} Q ${effQs[i].toFixed(2)}`);});
     return out.join('\n')+'\n';
   }
@@ -2654,14 +2873,15 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   };
   document.getElementById('exportEqPreset').onclick=()=>{const name=document.getElementById('preset').value||'Custom EQ';downloadJsonFile(`${fileSafeName(name)}.equaltune-eq.json`,currentEqPresetFile(name));notify('EQ preset file exported.');};
   document.getElementById('importEqPresetButton').onclick=()=>document.getElementById('importEqPresetFile').click();
-  document.getElementById('importEqPresetFile').onchange=async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>1024*1024)throw new Error('EQ preset files must be smaller than 1 MB.');const rawText=await file.text();const imported=/^\s*[\[{]/.test(rawText)?validateEqPresetFile(JSON.parse(rawText)):parseEqText(rawText,file.name);let name=imported.name;if(builtInPresets[name]||Object.prototype.hasOwnProperty.call(JSON.parse(localStorage.getItem('equalTunePresets')||'{}'),name))name=`${name} (imported)`;const saved=JSON.parse(localStorage.getItem('equalTunePresets')||'{}');saved[name]={freqs:imported.bands.frequencies,gains:imported.bands.gains,qs:imported.bands.qs,filters:imported.bands.filters,bandNames:imported.bands.names,customBandNames:imported.bands.customNames,active:imported.bands.active,order:imported.bands.order,customBandOrder:imported.bands.customOrder};localStorage.setItem('equalTunePresets',JSON.stringify(saved));let option=[...document.getElementById('preset').options].find(o=>o.value===name);if(!option){option=new Option(name,name);document.getElementById('preset').add(option);}document.getElementById('preset').value=name;document.getElementById('preset').dispatchEvent(new Event('change'));notify(`Imported “${name}”.`);}catch(error){notify(error.message||'Could not import that EQ preset.');}};
+  document.getElementById('importEqPresetFile').onchange=async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>1024*1024)throw new Error('EQ preset files must be smaller than 1 MB.');const rawText=await file.text();const imported=/^\s*[\[{]/.test(rawText)?validateEqPresetFile(JSON.parse(rawText)):parseEqText(rawText,file.name);let name=imported.name;if(builtInPresets[name]||Object.prototype.hasOwnProperty.call(JSON.parse(localStorage.getItem('equalTunePresets')||'{}'),name))name=`${name} (imported)`;const saved=JSON.parse(localStorage.getItem('equalTunePresets')||'{}');saved[name]={freqs:imported.bands.frequencies,gains:imported.bands.gains,qs:imported.bands.qs,filters:imported.bands.filters,bandNames:imported.bands.names,customBandNames:imported.bands.customNames,active:imported.bands.active,order:imported.bands.order,customBandOrder:imported.bands.customOrder,preamp:imported.preamp};localStorage.setItem('equalTunePresets',JSON.stringify(saved));let option=[...document.getElementById('preset').options].find(o=>o.value===name);if(!option){option=new Option(name,name);document.getElementById('preset').add(option);}document.getElementById('preset').value=name;document.getElementById('preset').dispatchEvent(new Event('change'));if(imported.reference)setImportReference(imported.reference);if(imported.bands.active.length>4)document.getElementById('advanced').click();if(Number.isFinite(imported.preamp))imported.note=(imported.note?imported.note+' ':'')+`Preamp set to ${Number(imported.preamp.toFixed(2))} dB.`;if(imported.note)showImportNote(`Imported “${name}”. ${imported.note}`);else{hideImportNote();notify(`Imported “${name}”.`);}}catch(error){notify(error.message||'Could not import that EQ preset.');}};
   document.getElementById('output').onchange=e=>{try{localStorage.setItem('equalTuneLastOutput',e.target.value);}catch{}switchDeviceProfile(e.target.value);document.getElementById('routeOutput').value=e.target.value;document.getElementById('routeOutputSummary').textContent=`${e.target.selectedOptions[0]?.textContent||'Choose an output'} · change it in the top bar`;postNative({type:'output',id:e.target.value});};
   document.getElementById('preset').onchange=e=>{
+    window.eqClearReference?.();
     const saved=JSON.parse(localStorage.getItem('equalTunePresets')||'{}');const custom=saved[e.target.value];
     extendedGainBackup.fill(null);
     if(custom){freqs.splice(0,12,...custom.freqs);gains.splice(0,12,...custom.gains);qs.splice(0,12,...custom.qs);filters.splice(0,12,...(custom.filters||Array(12).fill('Bell / peak')));bandNames.splice(0,12,...(custom.bandNames||Array(12).fill('')));customBandNames.splice(0,12,...(custom.customBandNames||Array(12).fill(false)));activeBandIds=[...custom.active];customBandOrder=Boolean(custom.customBandOrder);selectedAudioBand=activeBandIds[0]??baseBandIds[0];renderBandCards();}
     else if(builtInPresets[e.target.value])applyBuiltinPreset(presetBandsFor(e.target.value));
-    if(gains.some(g=>Math.abs(g)>12)){extendedGainRange=true;try{localStorage.setItem('equalTuneExtendedGainRange','true');}catch{}}syncGainRangeControls();syncBandCards();draw();sendAudioEq();committedPresetValue=e.target.value;scheduleCurrentEqSave();
+    if(gains.some(g=>Math.abs(g)>12)){extendedGainRange=true;try{localStorage.setItem('equalTuneExtendedGainRange','true');}catch{}}syncGainRangeControls();syncBandCards();draw();sendAudioEq();committedPresetValue=e.target.value;scheduleCurrentEqSave();window.eqApplyPresetPreamp?.(custom?custom.preamp:undefined);if(custom&&activeBandIds.length>4&&!document.body.classList.contains('advanced'))document.getElementById('advanced').click();
   };
   function applyBuiltinPreset(presetBands){
     freqs.splice(0,12,...initialFreqs);gains.fill(0);extendedGainBackup.fill(null);qs.fill(1);filters.fill('Bell / peak');bandNames.fill('');customBandNames.fill(false);
@@ -2923,7 +3143,7 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
       renamingPreset=null;
     }
     else if(act==='duplicate'){const copyName=uniquePresetName(`${name} copy`);saved[copyName]=JSON.parse(JSON.stringify(saved[name]));writeSaved(saved);rebuildPresetSelect();notify(`Saved “${copyName}”.`);}
-    else if(act==='export'){const p=saved[name];if(p)downloadJsonFile(`${fileSafeName(name)}.equaltune-eq.json`,{type:'equaltune-eq-preset',schemaVersion:1,name:fileSafeName(name),bands:{frequencies:p.freqs,gains:p.gains,qs:p.qs,filters:p.filters||Array(12).fill('Bell / peak'),names:p.bandNames||Array(12).fill(''),customNames:p.customBandNames||Array(12).fill(false),active:p.active,order:p.order||p.active,customOrder:Boolean(p.customBandOrder)}});}
+    else if(act==='export'){const p=saved[name];if(p)downloadJsonFile(`${fileSafeName(name)}.equaltune-eq.json`,{type:'equaltune-eq-preset',schemaVersion:1,name:fileSafeName(name),preamp:p.preamp,bands:{frequencies:p.freqs,gains:p.gains,qs:p.qs,filters:p.filters||Array(12).fill('Bell / peak'),names:p.bandNames||Array(12).fill(''),customNames:p.customBandNames||Array(12).fill(false),active:p.active,order:p.order||p.active,customOrder:Boolean(p.customBandOrder)}});}
     else if(act==='delete'){
       if(confirmingPreset!==name){confirmingPreset=name;renderPresetsPage();clearTimeout(renderPresetsPage.t);renderPresetsPage.t=setTimeout(()=>{if(confirmingPreset===name){confirmingPreset=null;renderPresetsPage();}},3000);return;}
       confirmingPreset=null;deleteSavedPreset(name);
@@ -3055,6 +3275,21 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   };
   renderAppRules();
   postNative({type:'appwatch',enabled:appAuto});
+
+  // ---- Imported curve overlay (dashed): the original curve from a graphic or table import, for comparing with the 12-band match ----
+  let importRef=null,refShown=true;
+  function syncRefToggle(){const b=document.getElementById('refToggle');b.hidden=!importRef;b.textContent=`Imported curve: ${refShown?'Shown':'Hidden'}`;b.setAttribute('aria-pressed',String(refShown));}
+  function setImportReference(points){importRef=points&&points.length?points:null;refShown=true;syncRefToggle();draw();}
+  window.eqClearReference=()=>{if(importRef){importRef=null;syncRefToggle();draw();}};
+  document.getElementById('refToggle').onclick=()=>{refShown=!refShown;syncRefToggle();draw();};
+  const drawWithoutReference=draw;
+  draw=function(){
+    drawWithoutReference();
+    if(!importRef||!refShown||!plot)return;
+    ctx.save();ctx.beginPath();ctx.setLineDash([6,4]);ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.6;
+    importRef.forEach(([f,g],k)=>{const x=xFor(f),y=yFor(clamp(g,-24,24));if(k)ctx.lineTo(x,y);else ctx.moveTo(x,y);});
+    ctx.stroke();ctx.restore();
+  };
 
   // ---- Per-skin audio visuals (drawn over the graph; data comes from the audio engine while routing) ----
   let vizTarget=[],vizShown=[],vizPeak=[],vizHold=[],vizRaf=0,vizLast=0,vizLastData=0,vizLastStyle='';
@@ -3305,24 +3540,70 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   postNative({type:'spectrum',enabled:spectrumOn});postNative({type:'hotkeys',enabled:hotkeysOn});
 
   // ---- Engine options: auto-preamp, level-matched A/B, safe output restore ----
-  const engine={autoPreamp:true,matchLevel:true,bypass:false,restoreOutput:true};
-  try{const saved=JSON.parse(localStorage.getItem('equalTuneEngine')||'{}');['autoPreamp','matchLevel','restoreOutput'].forEach(k=>{if(typeof saved[k]==='boolean')engine[k]=saved[k];});}catch{}
-  function saveEngine(){try{localStorage.setItem('equalTuneEngine',JSON.stringify({autoPreamp:engine.autoPreamp,matchLevel:engine.matchLevel,restoreOutput:engine.restoreOutput}));}catch{}}
+  const engine={autoPreamp:false,autoPref:false,matchLevel:true,bypass:false,restoreOutput:true,preampDb:0,sendDb:0,fading:false,presetOwned:false,lastAuto:0,gotInfo:false};
+  try{const saved=JSON.parse(localStorage.getItem('equalTuneEngine')||'{}');['matchLevel','restoreOutput'].forEach(k=>{if(typeof saved[k]==='boolean')engine[k]=saved[k];});engine.autoPref=saved.autoPref===true;engine.autoPreamp=engine.autoPref;}catch{}
+  function saveEngine(){try{localStorage.setItem('equalTuneEngine',JSON.stringify({autoPref:engine.autoPref,matchLevel:engine.matchLevel,restoreOutput:engine.restoreOutput}));}catch{}}
+  function localAutoPreamp(){try{solveEffectiveGains();let peak=0;for(let k=0;k<120;k++){const f=20*Math.pow(1000,k/119);peak=Math.max(peak,rawTotalResponse(f));}return -Math.max(0,peak);}catch{return 0;}}
+  function currentAutoPreamp(){return engine.gotInfo?engine.lastAuto:localAutoPreamp();}
+  const fmtDb=v=>`${Number((+v).toFixed(2))} dB`;
+  function syncPreampUi(){
+    const slider=document.getElementById('preampSlider');if(!slider)return;
+    const value=engine.autoPreamp?currentAutoPreamp():engine.preampDb;
+    slider.value=String(Math.max(-24,Math.min(24,value)));
+    const num=document.getElementById('preampNumber');if(document.activeElement!==num)num.value=String(Number(value.toFixed(2)));
+    document.getElementById('preampReadout').textContent=engine.autoPreamp?'Automatic':'Set by hand';
+    document.getElementById('preampReset').style.visibility=(!engine.autoPreamp&&Math.abs(engine.preampDb)>.004)?'visible':'hidden';
+    document.getElementById('preampFade').hidden=!engine.fading;
+    const warn=document.getElementById('preampWarn'),boost=engine.autoPreamp?0:engine.preampDb;
+    warn.hidden=boost<=6;warn.classList.toggle('danger',boost>12);warn.classList.toggle('caution',boost>6&&boost<=12);
+    const b1=Number(boost.toFixed(1));
+    warn.textContent=boost>12?'Very loud · risk of hearing damage':boost>6?`Loud · +${b1} dB`:'';
+    warn.title=boost>12?`+${b1} dB can damage your hearing and your speakers. Turn your volume down first.`:boost>6?`+${b1} dB boosts the signal about ${Math.pow(10,boost/20).toFixed(1)} times. Keep your volume low.`:'';
+  }
   function syncEngineUi(){
+    syncPreampUi();
     document.getElementById('autoPreamp').checked=engine.autoPreamp;document.getElementById('matchLevel').checked=engine.matchLevel;document.getElementById('restoreOutput').checked=engine.restoreOutput;
     const ab=document.getElementById('abButton');ab.setAttribute('aria-pressed',String(engine.bypass));ab.textContent=engine.bypass?'A/B · Original':'A/B · EQ on';
     document.body.classList.toggle('eq-bypassed',engine.bypass);
   }
-  function sendEngine(){postNative({type:'engine',autoPreamp:engine.autoPreamp,bypass:engine.bypass,matchLevel:engine.matchLevel});postNative({type:'safety',restoreOutput:engine.restoreOutput});}
+  function sendEngine(){postNative({type:'engine',autoPreamp:engine.autoPreamp,preampDb:engine.sendDb,bypass:engine.bypass,matchLevel:engine.matchLevel});postNative({type:'safety',restoreOutput:engine.restoreOutput});}
   function engineChanged(){saveEngine();syncEngineUi();sendEngine();}
-  document.getElementById('autoPreamp').onchange=e=>{engine.autoPreamp=e.target.checked;engineChanged();};
+  let fadeTimer=0;
+  function stopFade(){if(fadeTimer){clearInterval(fadeTimer);fadeTimer=0;}engine.fading=false;}
+  // Sets the preamp by hand. A big jump upward (typed value, preset, import) is raised gradually so it never arrives as a sudden blast.
+  function setManualPreamp(db,ramp){
+    db=Math.max(-24,Math.min(24,Number(db)||0));
+    const from=engine.autoPreamp?currentAutoPreamp():engine.sendDb;
+    stopFade();engine.autoPreamp=false;engine.preampDb=db;
+    if(ramp&&db-from>6){
+      engine.sendDb=from;engine.fading=true;
+      fadeTimer=setInterval(()=>{engine.sendDb=Math.min(db,Math.round((engine.sendDb+.6)*100)/100);if(engine.sendDb>=db)stopFade();sendEngine();syncPreampUi();},100);
+    }else engine.sendDb=db;
+    engineChanged();
+  }
+  document.getElementById('preampReset').onclick=()=>setManualPreamp(0,false);
+  document.getElementById('autoPreamp').onchange=e=>{
+    stopFade();
+    if(!e.target.checked&&engine.autoPreamp){engine.preampDb=0;engine.sendDb=0;}
+    engine.autoPreamp=e.target.checked;engine.autoPref=e.target.checked;engineChanged();
+  };
+  document.getElementById('preampSlider').oninput=e=>setManualPreamp(Number(e.target.value)||0,false);
+  document.getElementById('preampNumber').onchange=e=>{const v=parseFloat(String(e.target.value).replace(',','.'));if(!Number.isFinite(v)){syncPreampUi();return;}setManualPreamp(Math.round(v*100)/100,true);syncPreampUi();};
+  document.getElementById('preampNumber').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}};
+  document.getElementById('preampSlider').ondblclick=()=>setManualPreamp(0,false);
+  // Every preset sets the preamp: its saved value, or your Auto-preamp choice (off by default) when it has none.
+  window.eqApplyPresetPreamp=db=>{
+    if(Number.isFinite(db)){setManualPreamp(Math.round(db*100)/100,true);return;}
+    stopFade();engine.autoPreamp=engine.autoPref;engine.preampDb=0;engine.sendDb=0;
+    engineChanged();
+  };
   document.getElementById('matchLevel').onchange=e=>{engine.matchLevel=e.target.checked;engineChanged();};
   document.getElementById('restoreOutput').onchange=e=>{engine.restoreOutput=e.target.checked;engineChanged();};
   document.getElementById('abButton').onclick=()=>{engine.bypass=!engine.bypass;engineChanged();notify(engine.bypass?'Playing the original sound (EQ bypassed).':'EQ is on.');};
   document.addEventListener('keydown',e=>{if((e.key==='b'||e.key==='B')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.target.closest('input,select,textarea,[contenteditable]')){e.preventDefault();document.getElementById('abButton').click();}});
   window.equalTuneSetEngine=info=>{
-    const readout=document.getElementById('preampReadout');
-    readout.textContent=engine.autoPreamp?`Headroom ${Number(info.preampDb||0).toFixed(1)} dB`:'Auto-preamp off';
+    if(engine.autoPreamp&&Number.isFinite(Number(info.preampDb))){engine.lastAuto=Number(info.preampDb);engine.gotInfo=true;}
+    syncPreampUi();
     document.getElementById('clipIndicator').hidden=!(info.clips>0);
     const note=document.getElementById('soundEngineNote');if(note)note.textContent=info.sound?`Audio engine is using: ${info.sound}`:'';
   };
@@ -3401,8 +3682,62 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   wz('updateNotes').onclick=()=>{const t=window.__updateNotes;if(t)notify(t.length>220?t.slice(0,220)+'…':t);postNative({type:'update',action:'page'});};
   wz('updateSide').onclick=()=>{document.querySelector('nav button[data-page=Settings]').click();setTimeout(()=>wz('aboutSection').scrollIntoView({behavior:'smooth',block:'center'}),150);};
   window.equalTuneNotice=message=>notify(String(message));
+  try{const sp=JSON.parse(localStorage.getItem('equalTunePresets')||'{}')[document.getElementById('preset').value];if(sp&&Number.isFinite(sp.preamp)){engine.autoPreamp=false;engine.preampDb=Math.max(-24,Math.min(24,sp.preamp));engine.sendDb=engine.preampDb;}}catch{}
   syncEngineUi();sendEngine();
   sendAudioEq();
+
+  /* adaptive layout flags: top-bar sidebars wrap; narrow content collapses side-by-side panels */
+  (function(){
+    const b=document.body;
+    function fit(){
+      const a=document.querySelector('aside');if(!a)return;
+      const cs=getComputedStyle(a);
+      const row=cs.display.indexOf('flex')>=0&&cs.flexDirection==='row';
+      if(b.classList.contains('aside-row')!==row)b.classList.toggle('aside-row',row);
+      if(row&&getComputedStyle(a).position==='static')a.style.position='relative';
+      /* scale the top-bar controls with the window: full size on wide windows, smaller as it narrows (and a bit more if still too tight) */
+      const navs=[...a.querySelectorAll('.nav')],brEl=a.querySelector('.brand'),sbEl=a.querySelector('.side-bottom');
+      const pars=navs.map(n=>n.parentElement).filter(p=>p&&p!==a);
+      const setZ=z=>{navs.forEach((n,i)=>{n.style.zoom=z>=0.999?'':z.toFixed(3);const p=n.parentElement;if(p&&p!==a&&i>0)p.style.marginLeft=z>=0.999?'':(18*(z-1)).toFixed(1)+'px';});if(sbEl)sbEl.style.zoom=z>=0.999?'':z.toFixed(3);};
+      const setFixed=on=>{navs.forEach(n=>{const p=n.parentElement;if(!p||p===a)return;if(on){p.style.flex='0 0 auto';p.style.maxWidth='none';p.style.width='max-content';n.style.width='max-content';n.style.maxWidth='none';}else{p.style.flex='';p.style.maxWidth='';p.style.width='';n.style.width='';n.style.maxWidth='';}});};
+      setFixed(false);setZ(1);
+      if(row&&window.innerWidth>900&&brEl&&sbEl&&navs.length){
+        let z=1,fixed=false;
+        setZ(z);
+        for(let i=0;i<24;i++){
+          const br=brEl.getBoundingClientRect(),sr=sbEl.getBoundingClientRect();
+          const rs=[...a.querySelectorAll('.nav button')].map(n=>n.getBoundingClientRect());
+          const wrapped=rs.some(r=>r.top>br.top+br.height*0.6);
+          const over=Math.max(...rs.map(r=>r.right))>sr.left-14;
+          if(!(wrapped||over))break;
+          if(!fixed){setFixed(true);fixed=true;continue;}
+          z-=0.03;if(z<0.5)break;setZ(z);
+        }
+      }
+      /* centre the support button on the nav row (the bar can have uneven padding or an extra border) */
+      const sb=a.querySelector('.side-bottom'),nv=a.querySelector('.nav button');
+      if(sb){
+        if(row&&getComputedStyle(sb).position==='absolute'&&nv){
+          const ar=a.getBoundingClientRect(),nr=nv.getBoundingClientRect();
+          const nvAll=[...a.querySelectorAll('.nav button')].map(x=>x.getBoundingClientRect());
+          const top=Math.min(...nvAll.map(r=>r.top)),bot=Math.max(...nvAll.map(r=>r.bottom));
+          const c=((top+bot)/2-ar.top-(parseFloat(getComputedStyle(a).borderTopWidth)||0));
+          sb.style.top=(c/(parseFloat(sb.style.zoom)||1)).toFixed(1)+'px';
+        }else sb.style.top='';
+      }
+      const pg=document.getElementById('equalizerPage');
+      const w=pg?pg.getBoundingClientRect().width:0;
+      /* hysteresis so the flag cannot flap */
+      const narrow=b.classList.contains('eq-narrow');
+      const want=narrow?(w>0&&w<1110):(w>0&&w<1020);
+      if(want!==narrow)b.classList.toggle('eq-narrow',want);
+    }
+    window.addEventListener('resize',fit);
+    new MutationObserver(fit).observe(b,{attributes:true,attributeFilter:['class']});
+    if(window.ResizeObserver){const ro=new ResizeObserver(fit);ro.observe(document.querySelector('main')||b);const asd=document.querySelector('aside');if(asd)ro.observe(asd);}
+    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);
+    fit();setTimeout(fit,300);
+  })();
 </script>
 </body>
 </html>

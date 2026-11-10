@@ -41,9 +41,11 @@ Windows may show a "Windows protected your PC" warning because the installer is 
 - **Equalizer:** up to 12 live bands (bell, shelves, high/low-pass, notch and more) with frequency, gain and Q, drawn on a live response graph. Basic mode uses four tone bands; Advanced adds and removes bands.
 - **System-wide routing:** apps play into the VB-CABLE virtual device, EqualTune applies the EQ and plays the result on your headphones or speakers. Switching the listening output while routing keeps the route running.
 - **Volume:** the Windows volume slider (and mute) controls the routed sound. `Ctrl+Alt+↑ / ↓` change the Windows volume in 5% steps.
-- **Presets:** 14 built-in presets (4- and 8-band versions), your own saved presets, and a Presets page to rename, delete, import and export them. Equalizer APO / AutoEq text files can be imported and exported.
+- **Presets:** 14 built-in presets (4- and 8-band versions), your own saved presets, and a Presets page to rename, delete, import and export them. Equalizer APO / AutoEq text files can be imported and exported, and you can import GraphicEQ files and frequency/gain tables (CSV or text) too: curves are matched with EqualTune's 12 bands.
+- **Preset packs:** optional downloads from [equaltune.app](https://equaltune.app) with 100 ready-made presets: 37 headphones, 33 earphones and 30 genres. Headphone and earphone presets are based on [AutoEq](https://github.com/jaakkopasanen/AutoEq) results. Import them from the Presets page.
+- **Device changes:** if your headphones disconnect or reconnect while routing, EqualTune recovers on its own.
 - **Per-output and per-app EQ:** each output device remembers its own EQ, and EqualTune can switch presets automatically for the app you are using.
-- **Sound tools:** auto-preamp with a clip warning, level-matched A/B compare, limiter, channel balance, equal loudness and attenuation.
+- **Sound tools:** auto-preamp with a clip warning, a manual preamp slider (saved with presets and set by the `Preamp:` line when you import an Equalizer APO or AutoEq file), level-matched A/B compare, limiter, channel balance, equal loudness and attenuation.
 - **Live spectrum**, a different visual style for each of 16 skins, custom skins, background images and fonts.
 - **Global hotkeys:** `Ctrl+Alt+E` EQ on/off · `Ctrl+Alt+B` A/B compare · `Ctrl+Alt+←/→` previous/next preset · `Ctrl+Alt+↑/↓` volume.
 - **Safe output restore:** if EqualTune stops or crashes, Windows sound is switched back to your real output.
@@ -56,7 +58,8 @@ EqualTune is built to be customized, and everything you make can be saved and sh
 - Start from one of the 14 built-in presets, or build your own by dragging points on the graph or typing exact frequency, gain and Q values.
 - Click **Save** to keep your EQ as a named preset. **Save a copy** on any built-in preset lets you tweak it without losing the original.
 - **Export** writes an `.equaltune-eq.json` file you can send to a friend. **Import** loads one back in.
-- **Export .txt / Import** use the Equalizer APO / AutoEq text format, so you can bring in EQ profiles made for your headphones by the community, or take yours to other EQ apps.
+- **Export .txt** writes the Equalizer APO / AutoEq text format, so you can take your EQ to other EQ apps.
+- **Import** reads your own `.equaltune-eq.json` files and the common formats people share for headphones: Equalizer APO / AutoEq filter lines, Room EQ Wizard (REW) filter settings, AutoEq GraphicEQ files, and frequency/gain tables saved as CSV or text (for example AutoEq's result CSVs or a REW measurement exported as text). REW's `.mdat` project files can't be read: export the filter settings or the measurement as text instead. A curve is matched with EqualTune's 12 bands (an approximation, and EqualTune tells you how close the match is), and EqualTune switches to Advanced mode so you can see every band.
 
 **Skins and layouts**
 - Pick one of 16 visual styles (studio, cinematic, vintage analog, oscilloscope, frosted glass, blueprint, paper, synthwave, game HUD, aurora, high contrast and more), then adjust it:

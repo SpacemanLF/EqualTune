@@ -22,7 +22,8 @@ public partial class MainWindow : Window
     private bool _prototypeEqReceived;
     private bool _loadingDevices;
     private bool _isSweep;
-    private bool _autoPreamp = true, _bypass, _matchLevel = true, _limiter = true;
+    private bool _autoPreamp = false, _bypass, _matchLevel = true, _limiter = true;
+    private double _manualPreampDb;
     private double _attenuationDb, _loudness, _balance;
     private readonly OutputGuard _outputGuard = new(IsVirtualCableId);
     private static List<CoreAudioDevice> _knownDevices = [];
@@ -44,9 +45,11 @@ public partial class MainWindow : Window
     private EndpointVolume? _sysVolume;
     private readonly AppSettings _settings = AppSettings.Load();
     private TrayIcon? _tray;
-    private readonly DispatcherTimer _deviceTimer = new() { Interval = TimeSpan.FromSeconds(3) };
+    private readonly DispatcherTimer _deviceTimer = new() { Interval = TimeSpan.FromSeconds(1) };
     private string _deviceSignature = "";
     private bool _devicePollBusy;
+    private readonly List<string> _outputHistory = new();   // listening outputs used so far, newest last
+    private bool _recoveringOutput;
     private bool _watchdogStarted;
     private readonly DispatcherTimer _updateTimer = new() { Interval = TimeSpan.FromSeconds(20) };
     private UpdateInfo? _update;
@@ -279,7 +282,8 @@ public partial class MainWindow : Window
                     if (root.TryGetProperty("autoPreamp", out var ap)) _autoPreamp = ap.GetBoolean();
                     if (root.TryGetProperty("bypass", out var bp)) _bypass = bp.GetBoolean();
                     if (root.TryGetProperty("matchLevel", out var ml)) _matchLevel = ml.GetBoolean();
-                    _router?.SetEngineOptions(_autoPreamp, _bypass, _matchLevel);
+                    if (root.TryGetProperty("preampDb", out var manualDb) && manualDb.ValueKind == JsonValueKind.Number) _manualPreampDb = Math.Clamp(manualDb.GetDouble(), -24, 24);
+                    _router?.SetEngineOptions(_autoPreamp, _bypass, _matchLevel, _manualPreampDb);
                     break;
                 case "sound":
                     if (root.TryGetProperty("attenuation", out var att)) _attenuationDb = att.GetDouble();
@@ -401,6 +405,11 @@ public partial class MainWindow : Window
             if (DeviceSignature(playback, capture) == _deviceSignature) return;
             var keepOutput = (OutputDeviceCombo.SelectedItem as CoreAudioDevice)?.Id;
             var keepSource = (CaptureDeviceCombo.SelectedItem as CoreAudioDevice)?.Id;
+            if (_router is not null && keepOutput is not null && !playback.Any(d => string.Equals(d.Id, keepOutput, StringComparison.OrdinalIgnoreCase)))
+            {
+                RecoverFromLostOutput("the device was removed");   // earbuds turned off or unplugged while routing
+                return;
+            }
             var status = StatusText.Text;
             LoadDevices();
             _loadingDevices = true;
@@ -455,6 +464,7 @@ public partial class MainWindow : Window
             ApplyParameters();
             _router.Start();
             ArmCableDefault(source, target);
+            RememberOutput(target.Id);
             AppLog.Info($"Route started: {source.Name} -> {target.Name} ({(loopback ? "loopback" : "cable/input")})");
             _tray?.SetTip("EqualTune · routing system audio");
             RouteButton.Content = "■  Stop system audio route";
@@ -546,6 +556,7 @@ public partial class MainWindow : Window
             ApplyParameters();
             _router.Start();
             ArmCableDefault(source, target);
+            RememberOutput(target.Id);
             StatusText.Text = $"Routing {source.Name} → {target.Name}";
             ErrorText.Visibility = Visibility.Collapsed;
         }
@@ -581,7 +592,113 @@ public partial class MainWindow : Window
         }
     }
 
-    private void StopPlayback()
+    private void RememberOutput(string id)
+    {
+        _outputHistory.RemoveAll(x => string.Equals(x, id, StringComparison.OrdinalIgnoreCase));
+        _outputHistory.Add(id);
+        while (_outputHistory.Count > 6) _outputHistory.RemoveAt(0);
+    }
+
+    // Windows reports these when the playback device disappears (Bluetooth turned off, USB unplugged, driver reset).
+    private static bool IsDeviceGone(string error)
+    {
+        var text = error.ToUpperInvariant();
+        return text.Contains("0X88890004") || text.Contains("0X88890026") || text.Contains("0X80070490") || text.Contains("0X8007001F");
+    }
+
+    // The listening output vanished mid-route: move to the previously used output (or the Windows default) and keep playing, with no error box.
+    private void RecoverFromLostOutput(string reason)
+    {
+        if (_recoveringOutput) return;
+        _recoveringOutput = true;
+        try
+        {
+            var lost = OutputDeviceCombo.SelectedItem as CoreAudioDevice;
+            var keepSource = (CaptureDeviceCombo.SelectedItem as CoreAudioDevice)?.Id;
+            var wasRouting = _router is not null;
+            AppLog.Info($"Listening output lost ({reason}); switching to another output");
+            StopPlayback(restoreDefault: false);   // the old output is gone, so do not try to hand Windows sound back to it
+            LoadDevices();
+            _loadingDevices = true;
+            try
+            {
+                SelectDevice(CaptureDeviceCombo, CaptureModeCombo.SelectedIndex == 1 ? _devices : _captureDevices, keepSource);
+                if (CaptureDeviceCombo.SelectedItem is null && CaptureModeCombo.SelectedIndex == 0 && FindVirtualCableCapture() is { } cableIn) CaptureDeviceCombo.SelectedItem = cableIn;
+            }
+            finally { _loadingDevices = false; }
+            var outputs = OutputDeviceCombo.Items.OfType<CoreAudioDevice>().Where(d => lost is null || !string.Equals(d.Id, lost.Id, StringComparison.OrdinalIgnoreCase)).ToList();
+            CoreAudioDevice? pick = null;
+            for (var i = _outputHistory.Count - 1; i >= 0 && pick is null; i--)
+                pick = outputs.FirstOrDefault(d => string.Equals(d.Id, _outputHistory[i], StringComparison.OrdinalIgnoreCase));
+            pick ??= outputs.FirstOrDefault(d => d.IsDefault) ?? outputs.FirstOrDefault();
+            PushPrototypeDevices();
+            var lostName = lost?.Name ?? "Your output device";
+            if (pick is null)
+            {
+                _pendingNotice = $"{lostName} was disconnected and no other output is available.";
+                return;
+            }
+            _loadingDevices = true;
+            try { OutputDeviceCombo.SelectedItem = pick; }
+            finally { _loadingDevices = false; }
+            PushPrototypeDevices();
+            if (wasRouting) { RetryRouteAfterLoss(lostName, pick.Name, 0); return; }
+            _pendingNotice = $"{lostName} disconnected. Audio moved to {pick.Name}.";
+        }
+        catch (Exception ex) { AppLog.Error("Could not recover from a lost output", ex); ShowError("Your output device was disconnected. Choose another output and start the route again."); }
+        finally { _recoveringOutput = false; }
+    }
+
+    // Starts the route again on the chosen output, trying a few times because Windows needs a moment to settle after a device vanishes.
+    private void RetryRouteAfterLoss(string lostName, string pickName, int attempt)
+    {
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(attempt == 0 ? 350 : 900) };
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            var ok = false;
+            try { ok = TryStartRouteQuietly(); }
+            catch (Exception ex) { AppLog.Error($"Route restart attempt {attempt + 1} failed", ex); }
+            if (ok) { _pendingNotice = $"{lostName} disconnected. Audio moved to {pickName}."; FlushNotice(); return; }
+            if (attempt < 4) { RetryRouteAfterLoss(lostName, pickName, attempt + 1); return; }
+            _pendingNotice = $"{lostName} disconnected. Choose an output and press Start to continue.";
+            FlushNotice();
+        };
+        timer.Start();
+    }
+
+    private bool TryStartRouteQuietly()
+    {
+        if (_router is not null) return true;
+        var loopback = CaptureModeCombo.SelectedIndex == 1;
+        if (CaptureDeviceCombo.SelectedItem is not CoreAudioDevice source || OutputDeviceCombo.SelectedItem is not CoreAudioDevice target) return false;
+        if (IsVirtualRoutingPlayback(target)) return false;
+        try
+        {
+            _router = new WasapiLoopbackRouter(source.Id, target.Id, loopback);
+            ApplyParameters();
+            _router.Start();
+            ArmCableDefault(source, target);
+            RememberOutput(target.Id);
+            AppLog.Info($"Route restarted after output loss: {source.Name} -> {target.Name}");
+            _tray?.SetTip("EqualTune · routing system audio");
+            RouteButton.Content = "■  Stop system audio route";
+            ToneButton.IsEnabled = false;
+            SweepButton.IsEnabled = false;
+            StatusText.Text = $"Routing {source.Name} → {target.Name}";
+            ErrorText.Visibility = Visibility.Collapsed;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Could not restart the route", ex);
+            try { _router?.Dispose(); } catch { }
+            _router = null;
+            return false;
+        }
+    }
+
+    private void StopPlayback(bool restoreDefault = true)
     {
         var wasRouting = _router is not null;
         if (wasRouting) AppLog.Info("Route stopped");
@@ -601,7 +718,7 @@ public partial class MainWindow : Window
         SweepButton.IsEnabled = true;
         PeakMeter.Value = 0;
         if (StatusText is not null) StatusText.Text = "Playback stopped";
-        if (wasRouting && _outputGuard.RestoreAndDisarm()) _pendingNotice = "Route stopped. Windows sound was switched back to your listening output.";
+        if (wasRouting && restoreDefault && _outputGuard.RestoreAndDisarm()) _pendingNotice = "Route stopped. Windows sound was switched back to your listening output.";
     }
 
     private void RefreshDevices_Click(object sender, RoutedEventArgs e)
@@ -830,7 +947,7 @@ public partial class MainWindow : Window
             _player?.SetBands(bands);
             _router?.SetBands(bands);
         }
-        _router?.SetEngineOptions(_autoPreamp, _bypass, _matchLevel);
+        _router?.SetEngineOptions(_autoPreamp, _bypass, _matchLevel, _manualPreampDb);
         _router?.SetSoundControls(_attenuationDb, _loudness, _limiter, _balance);
     }
 
@@ -842,6 +959,7 @@ public partial class MainWindow : Window
             if (_spectrumSent && PrototypeUi.CoreWebView2 is not null) { _spectrumSent = false; _ = PrototypeUi.CoreWebView2.ExecuteScriptAsync("window.equalTuneSetSpectrum && window.equalTuneSetSpectrum([]);"); } PeakMeter.Value = 0; InputPeakMeter.Value = 0; return; }
         if (error is not null)
         {
+            if (_router is not null && IsDeviceGone(error)) { RecoverFromLostOutput(error); return; }
             StopPlayback();
             ShowError("Audio stopped: " + error);
             return;

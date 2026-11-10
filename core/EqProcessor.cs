@@ -10,7 +10,8 @@ public sealed class EqProcessor
 {
     private readonly object _lock = new();
     private AudioEqBand[] _bands = [];
-    private bool _autoPreamp = true, _bypass, _matchLevel = true, _limiter = true;
+    private bool _autoPreamp = false, _bypass, _matchLevel = true, _limiter = true;
+    private double _manualPreampDb, _cachedManualPreamp;
     private double _attenuationDb, _loudness, _balance;
 
     // Audio-thread cache; recomputed only when something changed.
@@ -41,9 +42,9 @@ public sealed class EqProcessor
         lock (_lock) _bands = copy;
     }
 
-    public void SetEngineOptions(bool autoPreamp, bool bypass, bool matchLevel)
+    public void SetEngineOptions(bool autoPreamp, bool bypass, bool matchLevel, double manualPreampDb = 0)
     {
-        lock (_lock) { _autoPreamp = autoPreamp; _bypass = bypass; _matchLevel = matchLevel; }
+        lock (_lock) { _autoPreamp = autoPreamp; _bypass = bypass; _matchLevel = matchLevel; _manualPreampDb = Math.Clamp(manualPreampDb, -24, 24); }
     }
 
     public void SetSoundControls(double attenuationDb, double loudnessPercent, bool limiter, double balance)
@@ -93,14 +94,15 @@ public sealed class EqProcessor
 
         AudioEqBand[] bands;
         bool autoPreamp, bypass, matchLevel, limiter;
+        double manualPreamp;
         double attenuation, loudness, balance;
         lock (_lock)
         {
-            bands = _bands; autoPreamp = _autoPreamp; bypass = _bypass; matchLevel = _matchLevel;
+            bands = _bands; autoPreamp = _autoPreamp; manualPreamp = _manualPreampDb; bypass = _bypass; matchLevel = _matchLevel;
             attenuation = _attenuationDb; loudness = _loudness; limiter = _limiter; balance = _balance;
         }
 
-        if (!ReferenceEquals(bands, _cachedBands) || sampleRate != _cachedRate || autoPreamp != _cachedAuto || bypass != _cachedBypass
+        if (!ReferenceEquals(bands, _cachedBands) || sampleRate != _cachedRate || autoPreamp != _cachedAuto || manualPreamp != _cachedManualPreamp || bypass != _cachedBypass
             || matchLevel != _cachedMatch || attenuation != _cachedAttenuation || loudness != _cachedLoudness)
         {
             // Equal loudness adds a gentle bass and treble lift after the user's bands.
@@ -111,13 +113,13 @@ public sealed class EqProcessor
                 effective = [.. bands, new AudioEqBand(100, 9 * amount, .7, FilterNames.LowShelf), new AudioEqBand(9000, 4.5 * amount, .7, FilterNames.HighShelf)];
             }
             var analysis = EqAnalysis.Analyze(effective, sampleRate);
-            var preamp = autoPreamp ? -Math.Max(0, analysis.PeakDb) : 0;
+            var preamp = autoPreamp ? -Math.Max(0, analysis.PeakDb) : manualPreamp;
             _coefficients = bypass ? [] : effective.Select(b => BiquadCoefficients.Create(sampleRate, b)).ToArray();
             // Bypass is level-matched to the EQ'd sound so A/B compares tone, not loudness.
             var gainDb = bypass ? (matchLevel ? Math.Clamp(analysis.MeanDb + preamp, -12, 12) : 0) : preamp;
             _outputGain = Math.Pow(10, (gainDb + attenuation) / 20);
             Volatile.Write(ref _preampDb, preamp);
-            _cachedBands = bands; _cachedRate = sampleRate; _cachedAuto = autoPreamp; _cachedBypass = bypass; _cachedMatch = matchLevel;
+            _cachedBands = bands; _cachedRate = sampleRate; _cachedAuto = autoPreamp; _cachedManualPreamp = manualPreamp; _cachedBypass = bypass; _cachedMatch = matchLevel;
             _cachedAttenuation = attenuation; _cachedLoudness = loudness;
         }
 

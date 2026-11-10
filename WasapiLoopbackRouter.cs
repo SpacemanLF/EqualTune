@@ -32,7 +32,8 @@ internal sealed class WasapiLoopbackRouter : IDisposable
     private readonly Thread _thread;
     private AudioEqBand[] _bands = [new(1000, 0, 1)];
     private double _volume = .4, _peak, _inputPeak;
-    private bool _autoPreamp = true, _bypass, _matchLevel = true;
+    private bool _autoPreamp = false, _bypass, _matchLevel = true;
+    private double _manualPreampDb, _cachedManualPreamp;
     // Sound controls from the UI: attenuation (dB, <= 0), equal loudness (0-100 %), limiter on/off, balance (-100 left .. +100 right).
     private double _attenuationDb, _loudness, _balance;
     private bool _limiter = true;
@@ -110,9 +111,9 @@ internal sealed class WasapiLoopbackRouter : IDisposable
         return SpectrumAnalyzer.Analyze(window, rate, bands);
     }
 
-    public void SetEngineOptions(bool autoPreamp, bool bypass, bool matchLevel)
+    public void SetEngineOptions(bool autoPreamp, bool bypass, bool matchLevel, double manualPreampDb = 0)
     {
-        lock (_parameterLock) { _autoPreamp = autoPreamp; _bypass = bypass; _matchLevel = matchLevel; }
+        lock (_parameterLock) { _autoPreamp = autoPreamp; _bypass = bypass; _matchLevel = matchLevel; _manualPreampDb = Math.Clamp(manualPreampDb, -24, 24); }
     }
 
     public void SetSoundControls(double attenuationDb, double loudnessPercent, bool limiter, double balance)
@@ -303,9 +304,10 @@ internal sealed class WasapiLoopbackRouter : IDisposable
         AudioEqBand[] bands;
         var volume = .4;
         bool autoPreamp, bypass, matchLevel, limiter;
+        double manualPreamp;
         double attenuation, loudness, balance;
-        lock (_parameterLock) { bands = _bands; volume = _volume; autoPreamp = _autoPreamp; bypass = _bypass; matchLevel = _matchLevel; attenuation = _attenuationDb; loudness = _loudness; limiter = _limiter; balance = _balance; }
-        if (!ReferenceEquals(bands, _cachedBands) || format.SampleRate != _cachedRate || autoPreamp != _cachedAuto || bypass != _cachedBypass || matchLevel != _cachedMatch || attenuation != _cachedAttenuation || loudness != _cachedLoudness)
+        lock (_parameterLock) { bands = _bands; volume = _volume; autoPreamp = _autoPreamp; manualPreamp = _manualPreampDb; bypass = _bypass; matchLevel = _matchLevel; attenuation = _attenuationDb; loudness = _loudness; limiter = _limiter; balance = _balance; }
+        if (!ReferenceEquals(bands, _cachedBands) || format.SampleRate != _cachedRate || autoPreamp != _cachedAuto || manualPreamp != _cachedManualPreamp || bypass != _cachedBypass || matchLevel != _cachedMatch || attenuation != _cachedAttenuation || loudness != _cachedLoudness)
         {
             // Equal loudness adds a gentle bass and treble lift (a simplified equal-loudness contour) after the user's bands.
             var effective = bands;
@@ -315,13 +317,13 @@ internal sealed class WasapiLoopbackRouter : IDisposable
                 effective = [.. bands, new AudioEqBand(100, 9 * amount, .7, FilterNames.LowShelf), new AudioEqBand(9000, 4.5 * amount, .7, FilterNames.HighShelf)];
             }
             var analysis = EqAnalysis.Analyze(effective, format.SampleRate);
-            var preamp = autoPreamp ? -Math.Max(0, analysis.PeakDb) : 0;
+            var preamp = autoPreamp ? -Math.Max(0, analysis.PeakDb) : manualPreamp;
             _coefficients = bypass ? [] : effective.Select(b => BiquadCoefficients.Create(format.SampleRate, b)).ToArray();
             // Bypass is level-matched to the EQ'd sound so A/B compares tone, not loudness.
             var gainDb = bypass ? (matchLevel ? Math.Clamp(analysis.MeanDb + preamp, -12, 12) : 0) : preamp;
             _outputGain = Math.Pow(10, (gainDb + attenuation) / 20);
             Volatile.Write(ref _preampDb, preamp);
-            _cachedBands = bands; _cachedRate = format.SampleRate; _cachedAuto = autoPreamp; _cachedBypass = bypass; _cachedMatch = matchLevel; _cachedAttenuation = attenuation; _cachedLoudness = loudness;
+            _cachedBands = bands; _cachedRate = format.SampleRate; _cachedAuto = autoPreamp; _cachedManualPreamp = manualPreamp; _cachedBypass = bypass; _cachedMatch = matchLevel; _cachedAttenuation = attenuation; _cachedLoudness = loudness;
         }
         var leftGain = balance > 0 ? 1 - balance / 100 : 1.0;
         var rightGain = balance < 0 ? 1 + balance / 100 : 1.0;
