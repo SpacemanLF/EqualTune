@@ -4,10 +4,7 @@
 
 EqualTune is a free, system-wide audio equalizer for Windows. A WPF window hosts the HTML interface in WebView2, and a native WASAPI engine does the audio work. Visit [equaltune.app](https://equaltune.app) for screenshots, a live demo and the optional preset packs.
 
-[![Website](https://img.shields.io/badge/Website-equaltune.app-2f80ed?style=for-the-badge&logo=googlechrome&logoColor=white)](https://equaltune.app)
-[![Download EqualTune](https://img.shields.io/github/v/release/SpacemanLF/EqualTune?label=Download%20EqualTune&style=for-the-badge&color=2f80ed)](https://github.com/SpacemanLF/EqualTune/releases/latest)
-[![Support EqualTune](https://img.shields.io/badge/Support-EqualTune-ffdd00?style=for-the-badge)](https://buymeacoffee.com/equaltune)
-[![Join r/EqualTune](https://img.shields.io/badge/Reddit-r%2FEqualTune-ff4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/r/EqualTune/)
+[![Download EqualTune](https://img.shields.io/github/v/release/SpacemanLF/EqualTune?label=Download%20EqualTune&style=flat-square&color=2f80ed)](https://github.com/SpacemanLF/EqualTune/releases/latest) [![Website](https://img.shields.io/badge/Website-equaltune.app-2f80ed?style=flat-square&logo=googlechrome&logoColor=white)](https://equaltune.app) [![Join r/EqualTune](https://img.shields.io/badge/Reddit-r%2FEqualTune-ff4500?style=flat-square&logo=reddit&logoColor=white)](https://www.reddit.com/r/EqualTune/) [![Support EqualTune](https://img.shields.io/badge/Support-EqualTune-ffdd00?style=flat-square)](https://buymeacoffee.com/equaltune)
 
 ## Download
 
