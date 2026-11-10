@@ -26,13 +26,13 @@ Windows may show a "Windows protected your PC" warning because the installer is 
 
 ![Basic mode](screenshots/01-basic-eq.png)
 
-**Advanced mode:** up to 12 parametric bands, each with its own frequency, gain, width (Q) and filter shape.
+**Advanced mode:** up to 12 parametric bands, each with its own frequency, gain, width (Q) and filter shape, plus a manual preamp with Reset and a clipping warning.
 
 ![Advanced mode](screenshots/02-advanced-eq.png)
 
 | | |
 | --- | --- |
-| ![Band controls](screenshots/03-band-controls.png)<br>Every band can be named, dragged, reordered and given its own filter shape. | ![Presets](screenshots/04-presets.png)<br>14 built-in presets, plus your own. |
+| ![Band controls](screenshots/03-band-controls.png)<br>Every band can be named, dragged, reordered and given its own filter shape. | ![Live spectrum](screenshots/04-live-spectrum.gif)<br>A live spectrum behind the curve, with 14 built-in presets and 100 more in the optional preset packs. |
 | ![Skins](screenshots/05-skins.png)<br>16 visual styles to choose from. | ![Appearance options](screenshots/06-appearance.png)<br>Background image, fonts, colors and text sizes. |
 
 
