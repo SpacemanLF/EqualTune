@@ -139,3 +139,16 @@ The app icon is `Assets/EqualTune.ico` (source: `Assets/EqualTune-icon-1024.png`
     style="width: 230px; height: auto;"
   />
 </a>
+<a href="https://peerpush.com/p/equaltune-lhfj"
+  target="_blank"
+  rel="noopener"
+>
+  <img
+    src="https://peerpush.com/p/equaltune-lhfj/badge.png"
+    alt="EqualTune on PeerPush"
+    width="230"
+    height="65"
+    loading="lazy"
+    style="width: 230px; height: auto;"
+  />
+</a>
