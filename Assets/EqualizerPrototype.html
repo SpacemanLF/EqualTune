@@ -2205,7 +2205,7 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   const curStyle=()=>{try{return uiPreferences.style;}catch{return 'equaltune';}};
   function markerShape(ctx,x,y,r,ext){
     const shape=appearance.marker!=='skin'?appearance.marker:(ext&&ext.marker);if(!shape)return false;
-    const R=r*((ext&&ext.size)||1),poly=n=>{ctx.beginPath();for(let k=0;k<n;k++){const a=Math.PI*2*k/n-Math.PI/2;k?ctx.lineTo(x+R*Math.cos(a),y+R*Math.sin(a)):ctx.moveTo(x+R*Math.cos(a),y+R*Math.sin(a));}ctx.closePath();};
+    const R=r*(shape==='diamond'?1.32:shape==='hexagon'?1.18:1),poly=n=>{ctx.beginPath();for(let k=0;k<n;k++){const a=Math.PI*2*k/n-Math.PI/2;k?ctx.lineTo(x+R*Math.cos(a),y+R*Math.sin(a)):ctx.moveTo(x+R*Math.cos(a),y+R*Math.sin(a));}ctx.closePath();};
     if(shape==='square'){ctx.beginPath();ctx.rect(x-R,y-R,R*2,R*2);}else if(shape==='diamond')poly(4);else if(shape==='hexagon')poly(6);else{ctx.beginPath();ctx.arc(x,y,R,0,Math.PI*2);}
     ctx.fill();ctx.stroke();
     if(shape==='ring'){ctx.beginPath();ctx.arc(x,y,R+5,0,Math.PI*2);ctx.strokeStyle=ctx.fillStyle+'99';ctx.lineWidth=2;ctx.stroke();}
@@ -2558,20 +2558,20 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
     if(style==='precision'&&ids.includes(selectedAudioBand)){const sx=xFor(freqs[selectedAudioBand]),sy=yFor(markerGain(selectedAudioBand));line(sx,plot.top,sx,plot.top+plot.gh,'#a9c8e333',1,[3,4]);line(plot.left,sy,plot.left+plot.gw,sy,'#a9c8e333',1,[3,4]);}
     if(style==='immersive'||style==='variance'){ctx.textAlign='left';ctx.fillStyle=style==='immersive'?'#e2dfff':'#dfd6ff';ctx.font=`bold 10px ${uiFont}`;ctx.fillText(style==='immersive'?'SOUND STAGE · RESPONSE':'LIVE SPECTRAL FIELD',plot.left,16);}
     ids.forEach(i=>{
-      const x=xFor(freqs[i]),y=yFor(markerGain(i)),selected=i===selectedAudioBand,radius=style==='immersive'||style==='variance'?10:style==='precision'?9:style==='vintage'?9:style==='modular'?9:style==='everyday'?9:9;
+      const x=xFor(freqs[i]),y=yFor(markerGain(i)),selected=i===selectedAudioBand,radius=10;
       ctx.save();ctx.shadowColor=colors[i];ctx.shadowBlur=style==='immersive'||style==='variance'?18:style==='vintage'?7:0;ctx.fillStyle=colors[i];ctx.strokeStyle=style==='vintage'?'#f5d08a':graphBg;ctx.lineWidth=style==='vintage'?2.2:style==='precision'?1:1.7;
       if(markerShape(ctx,x,y,radius,ext)){}
       else if(style==='everyday'){ctx.fillRect(x-radius,y-radius,radius*2,radius*2);ctx.strokeRect(x-radius-2,y-radius-2,radius*2+4,radius*2+4);}
       else if(style==='modular'){ctx.beginPath();ctx.rect(x-radius,y-radius,radius*2,radius*2);ctx.fill();ctx.stroke();}
       else if(style==='variance'){ctx.beginPath();ctx.moveTo(x,y-radius-2);ctx.lineTo(x+radius+2,y);ctx.lineTo(x,y+radius+2);ctx.lineTo(x-radius-2,y);ctx.closePath();ctx.fill();ctx.stroke();}
       else{ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();ctx.stroke();if(style==='vintage'){ctx.beginPath();ctx.arc(x,y,radius+4,0,Math.PI*2);ctx.strokeStyle='#dca95f99';ctx.lineWidth=1.5;ctx.stroke();}else if(style==='immersive'){ctx.beginPath();ctx.arc(x,y,radius+6,0,Math.PI*2);ctx.strokeStyle=colors[i]+'88';ctx.lineWidth=2;ctx.stroke();}}
-      if(style==='precision'){line(x-7,y,x+7,y,'#d7e8f5aa',1);line(x,y-7,x,y+7,'#d7e8f5aa',1);}
+      if(style==='precision'){line(x-9,y,x+9,y,'#d7e8f5aa',1);line(x,y-9,x,y+9,'#d7e8f5aa',1);}
       ctx.restore();
     });
     // Paint every label after every marker so later points can never cover text.
     ids.forEach(i=>{
       const x=xFor(freqs[i]),y=yFor(markerGain(i));
-      if(advanced){ctx.save();ctx.textAlign='center';ctx.textBaseline='alphabetic';if(style==='precision'){ctx.beginPath();ctx.arc(x,y,7.5,0,Math.PI*2);ctx.fillStyle=colors[i];ctx.fill();}ctx.font=`bold 11px ${uiFont}`;ctx.fillStyle='#10131b';const number=String(displayBandNumber(i)),metrics=ctx.measureText(number),baseline=y+((metrics.actualBoundingBoxAscent||8)-(metrics.actualBoundingBoxDescent||0))/2;ctx.fillText(number,x,baseline);ctx.restore();}
+      if(advanced){ctx.save();ctx.textAlign='center';ctx.textBaseline='alphabetic';if(style==='precision'){ctx.beginPath();ctx.arc(x,y,8.5,0,Math.PI*2);ctx.fillStyle=colors[i];ctx.fill();}ctx.font=`bold 12px ${uiFont}`;ctx.fillStyle='#10131b';const number=String(displayBandNumber(i)),metrics=ctx.measureText(number),baseline=y+((metrics.actualBoundingBoxAscent||8)-(metrics.actualBoundingBoxDescent||0))/2;ctx.fillText(number,x,baseline);ctx.restore();}
       else{const g=basicGroups.find(g=>g.id===i);if(g){ctx.save();ctx.font=`bold 11px ${uiFont}`;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillStyle=style==='vintage'?'#f4ce89':g.tone;const labelY=y-20<plot.top+4?y+24:y-20;ctx.fillText(g.name,x,labelY);ctx.restore();}}
     });
   }
@@ -2591,6 +2591,7 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   function markCustom(){document.getElementById('preset').value='Custom';committedPresetValue='Custom';sendAudioEq();scheduleCurrentEqSave();}
   function graphBands(){return visibleBandIds();}
   draw();window.addEventListener('resize',drawSoon);
+  try{let rw=0,rh=0;new ResizeObserver(es=>{const r=es[0].contentRect;if(Math.abs(r.width-rw)<.5&&Math.abs(r.height-rh)<.5)return;rw=r.width;rh=r.height;drawSoon();try{drawSpectrum();}catch{}}).observe(graph);}catch{}
   bandHost.addEventListener('input',e=>{const t=e.target;if(t.matches('[data-band]')){const i=Number(t.dataset.band);gains[i]=Number(t.value);extendedGainBackup[i]=null;syncBand(i);syncBasic();markCustom();draw();}else if(t.matches('[data-freq]')){const i=Number(t.dataset.freq);freqs[i]=clamp(Number(t.value)||20,20,20000);syncBand(i);markCustom();draw();}else if(t.matches('[data-q]')){const i=Number(t.dataset.q);qs[i]=clamp(Number(t.value)||1,.2,10);syncBand(i);markCustom();draw();}else if(t.matches('[data-name]')){const i=Number(t.dataset.name);bandNames[i]=t.value;customBandNames[i]=Boolean(t.value.trim());renderVintageBandSelector();syncSelectedBand();document.getElementById('preset').value='Custom';committedPresetValue='Custom';scheduleCurrentEqSave();}});
   bandHost.addEventListener('change',e=>{if(e.target.matches('[data-filter]')){const i=Number(e.target.dataset.filter);filters[i]=e.target.value;markCustom();draw();}else if(e.target.matches('[data-name]')){const i=Number(e.target.dataset.name),name=e.target.value.trim();customBandNames[i]=Boolean(name);bandNames[i]=name;e.target.value=name||`Band ${displayBandNumber(i)}`;renderVintageBandSelector();syncSelectedBand();markCustom();}else if(e.target.matches('[data-freq]')){if(!customBandOrder)sortActiveBands();renderBandCards();markCustom();draw();}});
   bandHost.addEventListener('click',e=>{const remove=e.target.closest('[data-remove]');if(remove){removeBand(Number(remove.dataset.remove));return;}const card=e.target.closest('[data-card]');if(card){selectedAudioBand=Number(card.dataset.card);syncSelectedBand();draw();sendAudioEq();}});
@@ -2612,9 +2613,10 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
     return clamp(out,20,20000);
   }
   function moveBand(i,x,y){selectedAudioBand=i;const group=basicGroups.find(g=>g.id===i);freqs[i]=freqFor(x);if(group)freqs[i]=clamp(freqs[i],group.min,group.max);if(!group)freqs[i]=keepBandSpacing(i,freqs[i]);const nextGain=gainFromMarker(i,dbFor(y));if(Math.abs(nextGain-gains[i])>.05)extendedGainBackup[i]=null;gains[i]=nextGain;syncBand(i);syncBasic();markCustom();drawSoon();}
+  const CROSS_CURSOR='url("data:image/svg+xml,'+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='25' height='25'><path d='M12.5 1v23M1 12.5h23' stroke='black' stroke-width='4' stroke-linecap='round'/><path d='M12.5 1v23M1 12.5h23' stroke='white' stroke-width='1.6' stroke-linecap='round'/></svg>")+'") 12 12, crosshair';
   graph.addEventListener('pointerdown',e=>{const r=graph.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;let best=18;graphBands().forEach(i=>{const d=Math.hypot(x-xFor(freqs[i]),y-yFor(markerGain(i)));if(d<best){best=d;draggingBand=i;}});if(draggingBand<0&&document.body.classList.contains('advanced')&&x>=plot.left&&x<=plot.left+plot.gw&&y>=plot.top&&y<=plot.top+plot.gh){draggingBand=addBand(freqFor(x),clamp(dbFor(y),-gainLimit(),gainLimit()));if(draggingBand>=0)moveBand(draggingBand,x,y);}if(draggingBand>=0){selectedAudioBand=draggingBand;syncSelectedBand();draw();graph.setPointerCapture(e.pointerId);graph.style.cursor='grabbing';e.preventDefault();}});
-  graph.addEventListener('pointermove',e=>{if(draggingBand<0){const r=graph.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;let near=false;graphBands().forEach(i=>{if(Math.hypot(x-xFor(freqs[i]),y-yFor(markerGain(i)))<13)near=true;});graph.style.cursor=near?'grab':document.body.classList.contains('advanced')?'crosshair':'default';return;}const r=graph.getBoundingClientRect();moveBand(draggingBand,e.clientX-r.left,e.clientY-r.top);});
-  graph.addEventListener('pointerup',()=>{const moved=draggingBand>=0;draggingBand=-1;if(moved){if(!customBandOrder)sortActiveBands();renderBandCards();}graph.style.cursor='crosshair';});
+  graph.addEventListener('pointermove',e=>{if(draggingBand<0){const r=graph.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;let near=false;graphBands().forEach(i=>{if(Math.hypot(x-xFor(freqs[i]),y-yFor(markerGain(i)))<14)near=true;});graph.style.cursor=near?'grab':document.body.classList.contains('advanced')?CROSS_CURSOR:'default';return;}const r=graph.getBoundingClientRect();moveBand(draggingBand,e.clientX-r.left,e.clientY-r.top);});
+  graph.addEventListener('pointerup',()=>{const moved=draggingBand>=0;draggingBand=-1;if(moved){if(!customBandOrder)sortActiveBands();renderBandCards();}graph.style.cursor=CROSS_CURSOR;});
   const toast=document.getElementById('toast'); let toastTimer;
   function showImportNote(msg){const n=document.getElementById('importNote');document.getElementById('importNoteText').textContent=msg;n.hidden=false;}
   function hideImportNote(){const n=document.getElementById('importNote');if(n)n.hidden=true;}
