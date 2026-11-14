@@ -25,7 +25,11 @@ internal sealed class LinuxRouter : IDisposable
     private Exception? _startupError;
     private IntPtr _record, _play;
 
+    private long _latencyUs;
+
     public EqProcessor Processor { get; }
+    /// <summary>Rough delay EqualTune adds, in milliseconds (the sound server's buffers plus one block of waiting).</summary>
+    public double LatencyMs => Volatile.Read(ref _latencyUs) / 1000.0;
     public string? LastError => _lastError;
     public bool IsTone => _source is null;
     public bool IsSweep => _sweep;
@@ -66,6 +70,7 @@ internal sealed class LinuxRouter : IDisposable
             _ready.Set();
 
             var buffer = new float[BlockFrames * Channels];
+            var latencyTick = 0;
             var phase = 0.0;
             var sweepPosition = 0.0;
             while (!_stop)
@@ -98,6 +103,7 @@ internal sealed class LinuxRouter : IDisposable
                 Processor.Process(buffer, BlockFrames, Channels, Rate);
                 if (PulseSimple.pa_simple_write(_play, buffer, (UIntPtr)blockBytes, out var writeError) < 0)
                     throw new InvalidOperationException("Playing to the output failed: " + PulseSimple.Error(writeError));
+                if (++latencyTick % 8 == 0) UpdateLatency();
             }
         }
         catch (DllNotFoundException)
@@ -113,6 +119,20 @@ internal sealed class LinuxRouter : IDisposable
             Free();
             _ready.Set();
         }
+    }
+
+    private void UpdateLatency()
+    {
+        try
+        {
+            ulong us = 0;
+            if (_record != IntPtr.Zero) { var a = PulseSimple.pa_simple_get_latency(_record, out _); if (a != ulong.MaxValue) us += a; }
+            if (_play != IntPtr.Zero) { var b = PulseSimple.pa_simple_get_latency(_play, out _); if (b != ulong.MaxValue) us += b; }
+            // pa_simple hands over audio a whole block at a time, so one block of the delay comes from waiting for it.
+            if (_source is not null) us += (ulong)(BlockFrames * 1_000_000L / Rate);
+            Volatile.Write(ref _latencyUs, (long)us);
+        }
+        catch { }
     }
 
     private void Fail(Exception ex)

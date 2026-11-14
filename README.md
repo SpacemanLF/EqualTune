@@ -43,7 +43,7 @@ Windows may show a "Windows protected your PC" warning because the installer is 
 - **Volume:** the Windows volume slider (and mute) controls the routed sound. `Ctrl+Alt+↑ / ↓` change the Windows volume in 5% steps.
 - **Presets:** 14 built-in presets (4- and 8-band versions), your own saved presets, and a Presets page to rename, delete, import and export them. Equalizer APO / AutoEq text files can be imported and exported.
 - **Per-output and per-app EQ:** each output device remembers its own EQ, and EqualTune can switch presets automatically for the app you are using.
-- **Sound tools:** auto-preamp with a clip warning, level-matched A/B compare, limiter, channel balance, equal loudness and attenuation.
+- **Sound tools:** auto-preamp with a clip warning, a manual preamp slider (saved with presets and set by the `Preamp:` line when you import an Equalizer APO or AutoEq file), level-matched A/B compare, limiter, channel balance, equal loudness and attenuation.
 - **Live spectrum**, a different visual style for each of 16 skins, custom skins, background images and fonts.
 - **Global hotkeys:** `Ctrl+Alt+E` EQ on/off · `Ctrl+Alt+B` A/B compare · `Ctrl+Alt+←/→` previous/next preset · `Ctrl+Alt+↑/↓` volume.
 - **Safe output restore:** if EqualTune stops or crashes, Windows sound is switched back to your real output.

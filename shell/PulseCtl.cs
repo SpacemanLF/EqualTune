@@ -194,6 +194,9 @@ internal static class PulseSimple
     public static extern int pa_simple_flush(IntPtr s, out int error);
 
     [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
+    public static extern ulong pa_simple_get_latency(IntPtr s, out int error);
+
+    [DllImport(Lib, CallingConvention = CallingConvention.Cdecl)]
     public static extern void pa_simple_free(IntPtr s);
 
     [DllImport(Core, CallingConvention = CallingConvention.Cdecl)]
