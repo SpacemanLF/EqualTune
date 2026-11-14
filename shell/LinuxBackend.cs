@@ -332,7 +332,7 @@ internal static class LinuxBackend
                 var output = (int)Math.Clamp(router.Processor.Peak * 100, 0, 100);
                 _statusSent = true;
                 if (_tick % 20 == 0) Console.WriteLine($"levels: input {router.Processor.InputPeak:0.000}  output {router.Processor.Peak:0.000}  preamp {Processor.PreampDb:0.0} dB  clips {Processor.ClipCount}");
-                Call("equalTuneSetStatus", state, input, output);
+                Call("equalTuneSetStatus", state, input, output, (int)Math.Round(router.LatencyMs));
                 var clips = Processor.ClipCount;
                 var preamp = Processor.PreampDb;
                 var sound = Processor.SoundSummary;

@@ -1814,6 +1814,41 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
       html body[class] .preamp-ctl input[type=range] { width:110px; }
       html body[class] .tabs-row { gap:8px !important; }
     }
+
+    /* ---- v1.8: health check, preset source pill, strength, output presets, preset packs ---- */
+    .hc-list{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:10px}
+    .hc-row{display:flex;gap:10px;align-items:flex-start}
+    .hc-row strong{display:block;font-weight:600}
+    .hc-row small{display:block;color:var(--muted);line-height:1.35}
+    .hc-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex:none;background:var(--muted);opacity:.7}
+    .hc-dot[data-s=ok]{background:#3ecf8e;opacity:1}.hc-dot[data-s=warn]{background:#f5b84a;opacity:1}.hc-dot[data-s=bad]{background:#ff6b6b;opacity:1}
+    .hc-verdict{margin:12px 0 4px;font-weight:600;line-height:1.4}
+    .hc-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .preset-why{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+    .preset-why[hidden]{display:none}
+    .why-line{margin:6px 0 0}.why-line[hidden]{display:none}
+    .why-pill{max-width:280px;overflow:hidden;text-overflow:ellipsis;font-size:12px!important}.why-pill[hidden]{display:none!important}
+    .engine-bar .preamp-ctl{flex:0 0 auto;flex-wrap:nowrap;white-space:nowrap}
+    .engine-bar .preamp-ctl input[type=range]{width:clamp(80px,13vw,150px);min-width:0}
+    .engine-compare{margin-left:auto;display:inline-flex;align-items:center;gap:12px;flex-wrap:nowrap;white-space:nowrap}
+    .engine-status{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .engine-compare .latency-readout{white-space:nowrap;min-width:96px;text-align:right}
+    .strength-ctl output{min-width:42px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+    .latency-readout{font-variant-numeric:tabular-nums}
+    .out-preset-row,.pack-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+    .out-preset-row:first-child,.pack-row:first-child{border-top:0}
+    .out-preset-row .grow,.pack-row .grow{flex:1;min-width:160px}
+    .out-preset-row small,.pack-row small{display:block;color:var(--muted)}
+    .out-preset-row select{max-width:240px}
+    .pack-tools{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 8px}
+    .pack-tools input[type=search]{flex:1;min-width:160px;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit}
+    .pack-msg{color:var(--muted);margin:8px 0}
+    .engine-bar .engine-break{flex:0 0 100%;height:0;margin:-8px 0 0;padding:0;border:0}
+    body .preference-row:has(>input[type=checkbox]){flex-wrap:nowrap}
+    body .preference-row>span:first-child{flex:1 1 0;min-width:0}
+    body .preference-row>input[type=checkbox]{margin-left:auto}
+    #packsList{max-height:min(60vh,520px);overflow-y:auto;padding-right:6px}
+    .pack-tag{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--muted);margin-left:8px}
 </style>
 <script id="equaltune-lite-fx-js">
 (function(){
@@ -1899,13 +1934,15 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
         <label class="engine-toggle" title="Lower the volume by the EQ's biggest boost so boosted presets do not distort"><input type="checkbox" id="autoPreamp"><span>Auto-preamp</span></label>
         <span class="engine-readout" id="preampReadout">Automatic</span>
         <span class="preamp-ctl" title="Lower or raise the overall volume. Dragging it switches Auto-preamp off. Turn Auto-preamp back on to let EqualTune set it from the EQ."><label for="preampSlider">Preamp</label><input type="range" id="preampSlider" min="-24" max="24" step="0.1" value="0" aria-label="Preamp in decibels"><input type="number" id="preampNumber" min="-24" max="24" step="0.1" value="0" aria-label="Preamp in decibels, type a value"><span class="preamp-unit">dB</span><button type="button" class="small-btn preamp-reset" id="preampReset" title="Set the preamp back to 0 dB">Reset</button></span>
+        <span class="preamp-ctl strength-ctl" title="Turn the whole preset down or up. 100% is the preset as it is, 0% is flat. Changing a band yourself starts again from 100%."><label for="strengthSlider">Strength</label><input type="range" id="strengthSlider" min="0" max="100" step="1" value="100" aria-label="Preset strength in percent"><output id="strengthValue">100%</output></span>
+        <span class="engine-break" aria-hidden="true"></span>
         <span class="preamp-warn" id="preampWarn" role="alert" hidden></span>
         <span class="preamp-fade" id="preampFade" role="status" hidden>Raising volume gradually…</span>
         <button type="button" class="range-toggle" id="refToggle" aria-pressed="true" hidden title="Show or hide the original curve from the file you imported (dashed line)">Imported curve: Shown</button>
-        <span class="engine-clip" id="clipIndicator" hidden>Clipping detected</span>
+        <span class="engine-status"><span class="engine-clip" id="clipIndicator" hidden>Clipping detected</span></span>
         <span class="engine-spacer"></span>
-        <label class="engine-toggle" title="When comparing, make the original sound as loud as the EQ sound"><input type="checkbox" id="matchLevel" checked><span>Match loudness</span></label>
-        <button type="button" class="engine-ab" id="abButton" aria-pressed="false" title="Compare with the original sound (key: B)">A/B · EQ on</button>
+        <span class="engine-compare"><span class="engine-readout latency-readout" id="latencyReadout" hidden title="Delay added by EqualTune itself. It does not include Bluetooth or the output device, which can add more."></span><label class="engine-toggle" title="When comparing, make the original sound as loud as the EQ sound"><input type="checkbox" id="matchLevel" checked><span>Match loudness</span></label>
+        <button type="button" class="engine-ab" id="abButton" aria-pressed="false" title="Compare with the original sound (key: B)">A/B · EQ on</button></span>
       </div>
       <div class="graph-wrap"><span class="graph-label axis-y">Gain (dB)</span><canvas id="graph" aria-label="Equalizer response graph with a fixed plus or minus 24 decibel scale. Points show each band's individual gain at its center frequency. The blue curve shows the combined response; colored ribbons show each band's contribution. Band controls show individual gain."></canvas><span class="graph-label axis-x">Frequency (Hz)</span></div>
       <div class="vintage-band-selector" id="vintageBandSelector" role="group" aria-label="Select EQ band"></div>
@@ -1940,6 +1977,14 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
         <div class="panel-head"><div><h2>My presets</h2><div class="sub" id="myPresetsSub"></div></div><div class="legend"><button class="small-btn" id="presetsSaveCurrent" type="button">Save current EQ…</button><button class="small-btn" id="presetsImport" type="button" title="Import an EqualTune preset, Equalizer APO / AutoEq / Room EQ Wizard filters, a GraphicEQ file, or a frequency and gain table (CSV or text)">Import…</button></div></div>
         <div class="preset-list" id="myPresetList"></div>
       </div>
+      <div class="panel presets-panel" id="packsPanel">
+        <div class="panel-head"><div><h2>Preset packs</h2><div class="sub">100 ready-made presets for headphones, earphones and music genres. Browse downloads the list from equaltune.app. Nothing is installed until you press Use.</div></div><div class="legend"><button class="small-btn" id="packsBrowse" type="button">Browse presets</button></div></div>
+        <div id="packsBody" hidden>
+          <div class="pack-tools"><input id="packsSearch" type="search" placeholder="Search presets" aria-label="Search presets"><select id="packsCat" aria-label="Category"><option value="">All categories</option><option>Headphones</option><option>Earphones</option><option>Genres</option></select></div>
+          <div class="pack-msg" id="packsMsg" role="status"></div>
+          <div id="packsList"></div>
+        </div>
+      </div>
       <div class="panel presets-panel" id="appRulesPanel">
         <div class="panel-head"><div><h2>Auto-switch by app</h2><div class="sub">Give an app its own preset. EqualTune switches to it while you are using that app, then returns to your own sound when you leave it.</div></div><div class="legend"><label class="engine-toggle"><input type="checkbox" id="appAutoOn"><span>Auto-switch</span></label><button class="small-btn" id="appRuleAdd" type="button">＋ Add app</button></div></div>
         <div class="app-add" id="appAddForm" hidden>
@@ -1968,6 +2013,7 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
           <label class="preference-row" for="showHints"><span><strong>Show guidance</strong><small>Keep short tips beside EQ controls</small></span><input id="showHints" type="checkbox" checked></label>
           <label class="preference-row" for="showRouteCard"><span><strong>Show route summary</strong><small>Keep audio route status in the sidebar</small></span><input id="showRouteCard" type="checkbox" checked></label>
           <label class="preference-row" for="restoreOutput"><span><strong>Restore sound output</strong><small>If EqualTune stops or crashes, switch <span data-os="windows">Windows sound</span><span data-os="linux">your sound output</span> back to your speakers or headphones</small></span><input id="restoreOutput" type="checkbox" checked></label>
+          <label class="preference-row" for="showDelay"><span><strong>Show delay on the equalizer page</strong><small>Shows how much delay EqualTune adds next to Match loudness. The Devices page health check always shows it.</small></span><input id="showDelay" type="checkbox" checked></label>
           <label class="preference-row" for="deviceProfiles"><span><strong>Remember EQ per output</strong><small>Each headphone or speaker keeps its own EQ and loads it when you switch to it</small></span><input id="deviceProfiles" type="checkbox" checked></label>
           <label class="preference-row" for="skinFollowsPreset"><span><strong>Skin follows preset</strong><small>Each sound preset switches to a matching visual skin; turning this off restores your skin</small></span><input id="skinFollowsPreset" type="checkbox"></label>
           <label class="preference-row" for="liveSpectrum"><span><strong>Live spectrum</strong><small>Show the sound that is playing behind the EQ curve while audio is routed</small></span><input id="liveSpectrum" type="checkbox" checked></label>
@@ -2075,6 +2121,22 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
         <div class="settings-section-heading"><div><h3>Signal levels</h3><p>Watch the selected source and output while testing or routing audio.</p></div><span class="pill" id="devicesPageStatus">Connecting audio…</span></div>
         <div class="device-meter-grid"><label>Input <output id="inputMeterValue">0%</output><progress id="inputMeter" max="100" value="0"></progress></label><label>Output <output id="outputMeterValue">0%</output><progress id="outputMeter" max="100" value="0"></progress></label></div>
         <p class="skin-help">Playback capture is a diagnostic copy: the original may remain audible on its current device. For system-wide routing, <span data-os="windows">set VB-CABLE as the Windows playback device first</span><span data-os="linux">use System audio mode</span>.</p>
+      </section>
+      <section class="panel settings-section" id="healthCheck">
+        <div class="settings-section-heading"><div><h3>Audio health check</h3><p>See whether sound is really reaching EqualTune and leaving it, and how much delay EqualTune adds.</p></div></div>
+        <ul class="hc-list">
+          <li class="hc-row"><i class="hc-dot" id="hcInDot" data-s="idle"></i><span><strong>Sound into EqualTune</strong><small id="hcInText">Start the route to check.</small></span></li>
+          <li class="hc-row"><i class="hc-dot" id="hcOutDot" data-s="idle"></i><span><strong>Sound out of EqualTune</strong><small id="hcOutText">Start the route to check.</small></span></li>
+          <li class="hc-row"><i class="hc-dot" id="hcClipDot" data-s="idle"></i><span><strong>Headroom</strong><small id="hcClipText">No clipping reported.</small></span></li>
+          <li class="hc-row"><i class="hc-dot" id="hcLatDot" data-s="idle"></i><span><strong>Delay added by EqualTune</strong><small id="hcLatText">Measured while the route is running.</small></span></li>
+        </ul>
+        <div class="hc-verdict" id="hcVerdict" role="status" aria-live="polite">Route is off.</div>
+        <div class="hc-actions"><button class="small-btn" id="hcTone" type="button">Play test tone</button><button class="small-btn" id="hcBypass" type="button">Turn EQ off</button><button class="small-btn" id="hcRestart" type="button">Restart route</button></div>
+        <p class="skin-help">Delay is for EqualTune only. Bluetooth headphones and some outputs add more of their own.</p>
+      </section>
+      <section class="panel settings-section" id="outputPresetsPanel">
+        <div class="settings-section-heading"><div><h3>Preset for each output</h3><p>Choose a preset that loads whenever you switch to an output. Leave it on “Remember my last EQ” to keep your own tweaks for that output.</p></div></div>
+        <div id="outputPresetList"></div>
       </section>
     </section>
   </main>
@@ -3601,10 +3663,12 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
   document.getElementById('restoreOutput').onchange=e=>{engine.restoreOutput=e.target.checked;engineChanged();};
   document.getElementById('abButton').onclick=()=>{engine.bypass=!engine.bypass;engineChanged();notify(engine.bypass?'Playing the original sound (EQ bypassed).':'EQ is on.');};
   document.addEventListener('keydown',e=>{if((e.key==='b'||e.key==='B')&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!e.target.closest('input,select,textarea,[contenteditable]')){e.preventDefault();document.getElementById('abButton').click();}});
+  window.equalTuneUpdateClipUi=()=>{const el=document.getElementById('clipIndicator');if(el)el.hidden=!(window.__clipAt&&Date.now()-window.__clipAt<1000);};
+  setInterval(()=>window.equalTuneUpdateClipUi(),150);
   window.equalTuneSetEngine=info=>{
     if(engine.autoPreamp&&Number.isFinite(Number(info.preampDb))){engine.lastAuto=Number(info.preampDb);engine.gotInfo=true;}
     syncPreampUi();
-    document.getElementById('clipIndicator').hidden=!(info.clips>0);
+    {const c=Number(info.clips)||0;if(window.__lastClips===undefined||c<window.__lastClips)window.__lastClips=c;if(c>window.__lastClips)window.__clipAt=Date.now();window.__lastClips=c;window.equalTuneUpdateClipUi();}
     const note=document.getElementById('soundEngineNote');if(note)note.textContent=info.sound?`Audio engine is using: ${info.sound}`:'';
   };
   window.equalTuneSetAbout=info=>{const v=document.getElementById('aboutVersion');if(v&&info&&info.version)v.textContent=info.version;};
@@ -3738,6 +3802,229 @@ body.theme-aurora aside,body.theme-glass aside{justify-content:flex-start;min-wi
     if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);
     fit();setTimeout(fit,300);
   })();
+</script>
+
+<script id="equaltune-v18">
+(function(){
+  const $=id=>document.getElementById(id);
+  const WIN=(typeof OSW!=='undefined')?OSW:true;
+  const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch{return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}};
+
+  // ---- Latency readout and the audio health check ----
+  let latencyMs=0,clips=0,tIn=0,tOut=0,routingSince=0,lastRoute='',lastVerdict='';
+  const origStatus=window.equalTuneSetStatus;
+  window.equalTuneSetStatus=function(status,input,output,latency){
+    const r=origStatus.apply(this,arguments);
+    try{trackStatus(String(status||''),Number(input)||0,Number(output)||0,Number(latency)||0);}catch{}
+    return r;
+  };
+  const origEngine=window.equalTuneSetEngine;
+  window.equalTuneSetEngine=function(info){
+    const r=origEngine.apply(this,arguments);
+    try{clips=Number(info&&info.clips)||0;renderHealth();}catch{}
+    return r;
+  };
+  function recentClip(){return !!(window.__clipAt&&Date.now()-window.__clipAt<1000);}
+  function setRow(dot,text,state,msg){const d=$(dot),t=$(text);if(d&&d.dataset.s!==state)d.dataset.s=state;if(t&&t.textContent!==msg)t.textContent=msg;}
+  function trackStatus(status,input,output,latency){
+    const now=Date.now();
+    if(status==='Routing'){if(!routingSince)routingSince=now;}else routingSince=0;
+    if(input>0)tIn=now;if(output>0)tOut=now;
+    if(latency>0)latencyMs=latency;else if(status!=='Routing'&&status!=='Test tone'&&status!=='EQ sweep')latencyMs=0;
+    lastRoute=status;
+    const pill=$('latencyReadout');
+    if(pill){const show=showDelayOn()&&latencyMs>0&&(status==='Routing'||status==='Test tone'||status==='EQ sweep');pill.hidden=!show;if(show)pill.textContent=`Delay ≈ ${latencyMs} ms`;}
+    renderHealth();
+  }
+  function showDelayOn(){return store.get('equalTuneShowDelay',true)!==false;}
+  (function(){const c=$('showDelay');if(!c)return;c.checked=showDelayOn();c.addEventListener('change',()=>{store.set('equalTuneShowDelay',c.checked);const p=$('latencyReadout');if(p&&!c.checked)p.hidden=true;});})();
+  function renderHealth(){
+    if(!$('hcVerdict'))return;
+    const now=Date.now(),routing=lastRoute==='Routing',tone=lastRoute==='Test tone'||lastRoute==='EQ sweep';
+    const power=$('power');if($('hcBypass'))$('hcBypass').textContent=power&&power.classList.contains('off')?'Turn EQ on':'Turn EQ off';
+    let inState='idle',inMsg='Start the route to check.',outState='idle',outMsg='Start the route to check.',verdict;
+    if(routing){
+      const starting=now-routingSince<4000,inOk=now-tIn<4000,outOk=now-tOut<4000;
+      if(starting&&!inOk){inState='idle';inMsg='Checking…';outMsg='Checking…';verdict='Starting up. Play some sound to check the route.';}
+      else{
+        inState=inOk?'ok':'warn';inMsg=inOk?'Sound is reaching EqualTune.':'No sound is arriving.';
+        outState=outOk?'ok':(inOk?'warn':'idle');outMsg=outOk?'Sound is leaving EqualTune.':(inOk?'Sound arrives but nothing leaves.':'Waiting for sound.');
+        if(inOk&&outOk)verdict='All good. Sound is reaching EqualTune and leaving it.';
+        else if(!inOk)verdict=WIN?'No sound is reaching EqualTune. Play something, and check that CABLE Input is your Windows playback device.':'No sound is reaching EqualTune. Play something, and check that your apps play to the EqualTune virtual output.';
+        else verdict='Sound arrives but nothing leaves EqualTune. Check that your listening output is not muted or turned down, then try Restart route.';
+      }
+    }else if(tone){inState='idle';inMsg='A test tone is playing instead of your system sound.';outState=now-tOut<2000?'ok':'idle';outMsg=now-tOut<2000?'The tone is leaving EqualTune. If you cannot hear it, check the output.':'Waiting for the tone.';verdict='A test tone is playing. If you can hear it, your listening output works.';}
+    else{verdict='Route is off. Press Start system audio route in Audio route above.';}
+    setRow('hcInDot','hcInText',inState,inMsg);setRow('hcOutDot','hcOutText',outState,outMsg);
+    setRow('hcClipDot','hcClipText',recentClip()?'warn':((routing||tone)?'ok':'idle'),recentClip()?'Peaks were too loud a moment ago. Lower the preamp or the largest boost.':'No clipping just now.');
+    setRow('hcLatDot','hcLatText',latencyMs>0&&(routing||tone)?'ok':'idle',latencyMs>0&&(routing||tone)?`About ${latencyMs} ms. This is EqualTune only; Bluetooth and some outputs add more.`:'Measured while the route is running.');
+    const v=$('hcVerdict');if(v.textContent!==verdict)v.textContent=verdict;
+  }
+  if($('hcTone'))$('hcTone').onclick=()=>$('startTone').click();
+  if($('hcBypass'))$('hcBypass').onclick=()=>{$('power').click();setTimeout(renderHealth,50);};
+  if($('hcRestart'))$('hcRestart').onclick=()=>{
+    if(lastRoute!=='Routing'){$('startRoute').click();return;}
+    postNative({type:'stop'});notify('Restarting the route…');
+    setTimeout(()=>{if($('startRoute').dataset.running!=='true')$('startRoute').click();},1300);
+  };
+  renderHealth();
+
+  // ---- "Why is this preset active": shown only when a rule chose it ----
+  function whyNow(){
+    try{
+      if(typeof appAuto!=='undefined'&&appAuto&&appBaseline&&currentApp){
+        const rule=appRules.find(r=>r.on&&r.app.toLowerCase()===currentApp.toLowerCase());
+        if(rule)return{kind:'app',label:`App rule · ${prettyApp(currentApp)}`,title:`${prettyApp(currentApp)} has its own preset. Click to go back to your own sound until you switch apps.`};
+      }
+      const prefs=store.get('equalTuneOutputPresets',{}),id=activeDeviceId;
+      if(id&&prefs[id]&&presetSelect.value===prefs[id]){const nm=store.get('equalTuneDeviceNames',{})[id]||'this output';return{kind:'device',label:`Output preset · ${nm}`,title:'This output always starts with this preset. Change it in Devices.'};}
+    }catch{}
+    return null;
+  }
+  (function(){const lg=document.querySelector('#eqTitle')?.closest('.panel-head')?.querySelector('.legend');if(!lg)return;const b=document.createElement('button');b.type='button';b.className='range-toggle why-pill';b.id='presetWhy';b.hidden=true;lg.appendChild(b);})();
+  function refreshWhy(){
+    const b=$('presetWhy');if(!b)return;const wl=$('whyLine');const w=whyNow();
+    if(!w){if(!b.hidden){b.hidden=true;b.dataset.kind='';}if(wl)wl.hidden=true;return;}
+    if(b.hidden)b.hidden=false;if(wl&&wl.hidden)wl.hidden=false;
+    if(b.textContent!==w.label)b.textContent=w.label;
+    b.title=w.title;b.dataset.kind=w.kind;
+  }
+  $('presetWhy').onclick=()=>{
+    const w=whyNow();if(!w)return;
+    if(w.kind==='app'){restoreAppBaseline();renderAppRules();}
+    else{openDevices();}
+    refreshWhy();
+  };
+  setInterval(refreshWhy,700);
+
+  // ---- "No EQ (flat)" first in the per-app preset lists ----
+  presetOptionsHtml=function(selected){
+    const opts=[...presetSelect.options].filter(o=>o.value!=='Custom');
+    const flat=opts.find(o=>o.value==='Flat · reference');
+    const mk=(o,label)=>`<option value="${escapeHtml(o.value)}"${o.value===selected?' selected':''}>${escapeHtml(label)}</option>`;
+    return (flat?mk(flat,'No EQ (flat)'):'')+opts.filter(o=>o!==flat).map(o=>mk(o,o.value)).join('');
+  };
+  try{renderAppRules();}catch{}
+
+  // ---- Preset strength ----
+  let sBase=null,sLast=null;
+  const sl=$('strengthSlider'),sv=$('strengthValue');
+  const gainsNow=()=>gains.slice(0,12);
+  const sameGains=(a,b)=>Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((v,i)=>Math.abs(v-b[i])<0.011);
+  function resetStrength(){sBase=null;sLast=null;sl.value=100;sv.textContent='100%';}
+  sl.addEventListener('pointerdown',()=>{beginEqUndo();});
+  sl.addEventListener('keydown',()=>{beginEqUndo();});
+  sl.addEventListener('input',()=>{
+    const s=Number(sl.value)/100;
+    if(!sBase||!sameGains(gainsNow(),sLast))sBase=captureEqState();
+    const st=captureEqState();
+    st.gains=sBase.gains.map(g=>Math.round(g*s*10)/10);
+    st.enabled=$('power').classList.contains('on');
+    restoreEqState(st);
+    sLast=gainsNow();sv.textContent=Math.round(s*100)+'%';
+  });
+  sl.addEventListener('change',()=>{setTimeout(finishEqUndo,0);});
+  setInterval(()=>{if(sLast&&!sameGains(gainsNow(),sLast))resetStrength();},600);
+
+  // ---- A preset for each output ----
+  const namesKey='equalTuneDeviceNames',prefsKey='equalTuneOutputPresets';
+  let connected=new Set();
+  function renderOutputs(){
+    const list=$('outputPresetList');if(!list)return;
+    const names=store.get(namesKey,{}),prefs=store.get(prefsKey,{}),profiles=readDeviceProfiles();
+    const ids=[...new Set([...Object.keys(profiles),...Object.keys(prefs),...connected])];
+    if(!ids.length){list.innerHTML='<div class="pack-msg">No outputs yet. Connect headphones or speakers and they will appear here.</div>';return;}
+    ids.sort((a,b)=>(connected.has(b)-connected.has(a))||String(names[a]||'~').localeCompare(String(names[b]||'~')));
+    list.innerHTML=ids.map(id=>{
+      const on=connected.has(id),nm=names[id]||'Saved output (name shown once it connects)';
+      return `<div class="out-preset-row" data-id="${escapeHtml(id)}"><div class="grow"><strong>${escapeHtml(nm)}</strong><small>${on?'Connected':'Not connected'}</small></div><select data-out-preset aria-label="Preset for ${escapeHtml(nm)}"><option value="">Remember my last EQ</option>${presetOptionsHtml(prefs[id]||'')}</select>${on?'':'<button class="small-btn" type="button" data-out-forget>Forget</button>'}</div>`;
+    }).join('');
+  }
+  $('outputPresetList').addEventListener('change',e=>{
+    const sel=e.target.closest('[data-out-preset]');if(!sel)return;
+    const id=sel.closest('[data-id]').dataset.id,prefs=store.get(prefsKey,{});
+    if(sel.value)prefs[id]=sel.value;else delete prefs[id];
+    store.set(prefsKey,prefs);
+    if(sel.value&&id===activeDeviceId)applyOutputPreset(id);
+    refreshWhy();
+  });
+  $('outputPresetList').addEventListener('click',e=>{
+    const b=e.target.closest('[data-out-forget]');if(!b)return;
+    const id=b.closest('[data-id]').dataset.id;
+    const prefs=store.get(prefsKey,{});delete prefs[id];store.set(prefsKey,prefs);
+    const profiles=readDeviceProfiles();delete profiles[id];writeDeviceProfiles(profiles);
+    const names=store.get(namesKey,{});delete names[id];store.set(namesKey,names);
+    renderOutputs();notify('Forgot that output.');
+  });
+  function applyOutputPreset(id){
+    const pref=store.get(prefsKey,{})[id];
+    if(!pref||!presetExists(pref))return;
+    const changed=presetSelect.value!==pref;
+    resetStrength();applyPresetByName(pref);
+    if(changed)notify(`Loaded “${pref==='Flat · reference'?'No EQ (flat)':pref}” for this output.`);
+  }
+  const origSwitch=switchDeviceProfile;
+  switchDeviceProfile=function(id){const was=activeDeviceId;origSwitch.apply(this,arguments);if(id&&id!==was)applyOutputPreset(id);refreshWhy();};
+  const origDevices=window.equalTuneSetDevices;
+  window.equalTuneSetDevices=function(data){
+    const r=origDevices.apply(this,arguments);
+    try{
+      const names=store.get(namesKey,{});connected=new Set();
+      for(const d of (data.outputs||[])){names[d.id]=d.name;connected.add(d.id);}
+      store.set(namesKey,names);renderOutputs();
+    }catch{}
+    return r;
+  };
+  renderOutputs();
+
+  // ---- Preset packs browser ----
+  const PACK_URL='https://equaltune.app/presets/index.json';
+  let packs=null;
+  const packMsg=t=>{$('packsMsg').textContent=t;};
+  function renderPacks(){
+    if(!packs)return;
+    const q=$('packsSearch').value.trim().toLowerCase(),cat=$('packsCat').value;
+    const saved=readSaved();
+    const items=packs.map((p,i)=>({p,i})).filter(({p})=>(!cat||p.category===cat)&&(!q||p.name.toLowerCase().includes(q)));
+    packMsg(items.length?`${items.length} preset${items.length===1?'':'s'}`:'No presets match your search.');
+    $('packsList').innerHTML=items.map(({p,i})=>`<div class="pack-row"><div class="grow"><strong>${escapeHtml(p.name)}</strong><span class="pack-tag">${escapeHtml(p.category)}</span></div><button class="small-btn" type="button" data-pack="${i}">${saved[p.name]?'Apply':'Use'}</button></div>`).join('');
+  }
+  async function loadPacks(){
+    packMsg('Downloading the preset list…');
+    try{
+      const res=await fetch(PACK_URL,{cache:'no-cache'});
+      if(!res.ok){const e=new Error('HTTP '+res.status);e.http=res.status;throw e;}
+      const j=await res.json();
+      if(!j||!Array.isArray(j.presets))throw new Error('Unexpected file');
+      packs=j.presets.filter(p=>p&&typeof p.name==='string'&&typeof p.category==='string'&&p.preset&&typeof p.preset==='object');
+      renderPacks();
+    }catch(err){
+      packs=null;$('packsList').innerHTML='';
+      const why=err&&err.http?`The website answered with error ${err.http}, so the preset list is not published there yet.`:(err&&err.name==='SyntaxError'?'The website returned something that is not a preset list.':'No connection, or the request was blocked.');
+      packMsg('Could not load the preset list. '+why+' You can also download the packs from the website.');
+    }
+  }
+  $('packsBrowse').setAttribute('aria-expanded','false');
+  $('packsBrowse').onclick=()=>{
+    const body=$('packsBody'),btn=$('packsBrowse');
+    if(!body.hidden){body.hidden=true;btn.textContent='Browse presets';btn.setAttribute('aria-expanded','false');return;}
+    body.hidden=false;btn.textContent='Hide presets';btn.setAttribute('aria-expanded','true');
+    if(!packs)loadPacks();else renderPacks();
+  };
+  $('packsSearch').addEventListener('input',renderPacks);
+  $('packsCat').addEventListener('change',renderPacks);
+  $('packsList').addEventListener('click',e=>{
+    const b=e.target.closest('[data-pack]');if(!b||!packs)return;
+    const p=packs[Number(b.dataset.pack)];if(!p)return;
+    if(readSaved()[p.name]){applyPresetByName(p.name);notify(`Applied “${p.name}”.`);renderPacks();return;}
+    try{
+      const dt=new DataTransfer();
+      dt.items.add(new File([JSON.stringify(p.preset)],p.name+'.equaltune-eq.json',{type:'application/json'}));
+      const input=$('importEqPresetFile');input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));
+      setTimeout(renderPacks,900);
+    }catch{notify('Could not add that preset here. Download the pack from equaltune.app and use Import.');}
+  });
+})();
 </script>
 </body>
 </html>

@@ -971,7 +971,8 @@ public partial class MainWindow : Window
             var state = _router is not null ? "Routing" : _player is not null ? (_isSweep ? "EQ sweep" : "Test tone") : "Ready";
             var input = (int)InputPeakMeter.Value;
             var output = (int)PeakMeter.Value;
-            _ = PrototypeUi.CoreWebView2.ExecuteScriptAsync($"window.equalTuneSetStatus && window.equalTuneSetStatus({JsonSerializer.Serialize(state)},{input},{output});");
+            var latency = (int)Math.Round(_router?.LatencyMs ?? 0);
+            _ = PrototypeUi.CoreWebView2.ExecuteScriptAsync($"window.equalTuneSetStatus && window.equalTuneSetStatus({JsonSerializer.Serialize(state)},{input},{output},{latency});");
             var clips = _router?.ClipCount ?? 0;
             var preamp = _router?.PreampDb ?? 0;
             var soundSummary = _router?.SoundSummary ?? "";

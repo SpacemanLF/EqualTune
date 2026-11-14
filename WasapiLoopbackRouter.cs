@@ -31,7 +31,7 @@ internal sealed class WasapiLoopbackRouter : IDisposable
     private readonly ManualResetEvent _stop = new(false);
     private readonly Thread _thread;
     private AudioEqBand[] _bands = [new(1000, 0, 1)];
-    private double _volume = .4, _peak, _inputPeak;
+    private double _volume = .4, _peak, _inputPeak, _latencyMs;
     private bool _autoPreamp = false, _bypass, _matchLevel = true;
     private double _manualPreampDb, _cachedManualPreamp;
     // Sound controls from the UI: attenuation (dB, <= 0), equal loudness (0-100 %), limiter on/off, balance (-100 left .. +100 right).
@@ -55,6 +55,8 @@ internal sealed class WasapiLoopbackRouter : IDisposable
 
     public double Peak => Volatile.Read(ref _peak);
     public double InputPeak => Volatile.Read(ref _inputPeak);
+    /// <summary>Rough delay EqualTune adds, in milliseconds (queued audio plus the output buffer plus the devices' own stream latency).</summary>
+    public double LatencyMs => Volatile.Read(ref _latencyMs);
     public string? LastError => _lastError;
     /// <summary>Automatic headroom currently applied (0 or negative dB).</summary>
     public double PreampDb => Volatile.Read(ref _preampDb);
@@ -201,7 +203,7 @@ internal sealed class WasapiLoopbackRouter : IDisposable
             _ready.Set();
 
             var handles = new[] { _stop.SafeWaitHandle.DangerousGetHandle(), captureEvent, renderEvent };
-            var maximumQueuedSamples = sourceFormat.SampleRate * targetFormat.Channels / 2;
+            var maximumQueuedSamples = sourceFormat.SampleRate * targetFormat.Channels * 15 / 100; // about 150 ms; drops the oldest audio if the clocks drift apart
             while (!_disposed)
             {
                 var waitResult = WaitForMultipleObjects((uint)handles.Length, handles, false, 500);
@@ -210,6 +212,7 @@ internal sealed class WasapiLoopbackRouter : IDisposable
 
                 DrainCapture(capture, sourceFormat, targetFormat.Channels, sampleQueue);
                 RenderAvailable(renderClient, render, sourceFormat, targetFormat, sampleQueue, ref sourcePosition, z1, z2, renderBufferFrames);
+                UpdateLatency(captureClient, renderClient, sourceFormat, targetFormat, sampleQueue.Count);
                 if (sampleQueue.Count > maximumQueuedSamples)
                 {
                     var extraFrames = (sampleQueue.Count - maximumQueuedSamples) / targetFormat.Channels;
@@ -245,6 +248,23 @@ internal sealed class WasapiLoopbackRouter : IDisposable
             if (comInitialized) CoUninitialize();
             _ready.Set();
         }
+    }
+
+    private void UpdateLatency(IAudioClient capture, IAudioClient render, WasapiAudioFormat source, WasapiAudioFormat target, int queuedSamples)
+    {
+        try
+        {
+            var queuedMs = queuedSamples / (double)Math.Max(1, target.Channels) / Math.Max(1, source.SampleRate) * 1000.0;
+            var paddingMs = 0.0;
+            if (render.GetCurrentPadding(out var padding) >= 0) paddingMs = padding / (double)Math.Max(1, target.SampleRate) * 1000.0;
+            long captureTicks = 0, renderTicks = 0;
+            capture.GetStreamLatency(out captureTicks);
+            render.GetStreamLatency(out renderTicks);
+            var total = queuedMs + paddingMs + (captureTicks + renderTicks) / 10000.0;
+            var previous = Volatile.Read(ref _latencyMs);
+            Volatile.Write(ref _latencyMs, previous <= 0 ? total : previous * 0.9 + total * 0.1);
+        }
+        catch { }
     }
 
     private void DrainCapture(IAudioCaptureClient capture, WasapiAudioFormat format, int outputChannels, List<float> queue)
@@ -298,7 +318,9 @@ internal sealed class WasapiLoopbackRouter : IDisposable
     private void RenderAvailable(IAudioClient client, IAudioRenderClient render, WasapiAudioFormat sourceFormat, WasapiAudioFormat format, List<float> queue, ref double sourcePosition, double[,] z1, double[,] z2, uint bufferFrames)
     {
         Marshal.ThrowExceptionForHR(client.GetCurrentPadding(out var padding));
-        var frames = bufferFrames > padding ? bufferFrames - padding : 0;
+        // Keep only about 50 ms queued in the output buffer instead of filling all 200 ms: a full buffer is what added ~200 ms of delay.
+        var fillTarget = Math.Min(bufferFrames, (uint)Math.Max(256, format.SampleRate / 20));
+        var frames = fillTarget > padding ? fillTarget - padding : 0;
         if (frames == 0) return;
         Marshal.ThrowExceptionForHR(render.GetBuffer(frames, out var data));
         AudioEqBand[] bands;
@@ -366,7 +388,8 @@ internal sealed class WasapiLoopbackRouter : IDisposable
             var sysGain = sysStart + (sysTarget - sysStart) * (frame + 1) / (double)frames; // glide to the new volume across this block
             var scaled = filtered * volume * outputGain * sysGain;
             scaled *= (channel & 1) == 0 ? leftGain : rightGain; // even channels = left side, odd = right side
-            if (Math.Abs(scaled) > 1.0) clipped = true;
+            // With the limiter on, brief peaks above full scale are rounded off gently, so only flag peaks 6 dB or more past it.
+            if (Math.Abs(scaled) > (limiter ? 2.0 : 1.0)) clipped = true;
             var output = Math.Clamp(limiter ? EqAnalysis.SoftLimit(scaled) : scaled, -.98, .98);
             if (Math.Abs(output) > 0.000001) allSilent = false;
             peak = Math.Max(peak, Math.Abs(output));

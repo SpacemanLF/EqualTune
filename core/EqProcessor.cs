@@ -148,7 +148,7 @@ public sealed class EqProcessor
             }
             var scaled = filtered * outputGain;
             scaled *= (channel & 1) == 0 ? leftGain : rightGain; // even channels = left side, odd = right side
-            if (Math.Abs(scaled) > 1.0) clipped = true;
+            if (Math.Abs(scaled) > (limiter ? 2.0 : 1.0)) clipped = true; // with the limiter on, only flag peaks well past full scale
             var output = Math.Clamp(limiter ? EqAnalysis.SoftLimit(scaled) : scaled, -.98, .98);
             peak = Math.Max(peak, Math.Abs(output));
             if (channel == 0)
